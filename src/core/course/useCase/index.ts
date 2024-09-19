@@ -122,4 +122,19 @@ export class CourseUseCase {
 
     return await this.courseRepository.updateCourse(courseId, { sourceUrl });
   }
+
+  /**
+   * 講座を非公開にする
+   * @param courseId 講座ID
+   * @returns 非公開にされた講座
+   */
+  async unpublishCourse(courseId: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    return await this.courseRepository.updateCourse(courseId, { publishFlag: false });
+  }
 }

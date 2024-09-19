@@ -226,4 +226,30 @@ Course.put(
   },
 );
 
+/**
+ * 講座非公開API
+ * @route PUT /:course_id/unpublish
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns {Promise<Response>} 講座のJSONレスポンス
+ * @throws {Error} 講座非公開に失敗した場合
+ */
+Course.put(
+  "/:course_id/unpublish",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const course = await courseUseCase.unpublishCourse(courseId);
+      return c.json(course);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      return HandleError(c, error, "講座非公開エラー");
+    }
+  },
+);
+
 export default Course;
