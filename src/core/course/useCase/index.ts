@@ -33,4 +33,13 @@ export class CourseUseCase {
 
     return course;
   }
+
+  /**
+   * 講座を登録する
+   * @param title 講座のタイトル
+   * @returns 登録された講座
+   */
+  async registerCourse(title: string): Promise<Course> {
+    return await this.courseRepository.registerCourse(title);
+  }
 }

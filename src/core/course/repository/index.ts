@@ -2,6 +2,8 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
 import { course } from "../../../../db/schema";
 import type { Course } from "../types";
+import { createId } from "@paralleldrive/cuid2";
+import { getCurrentJstDate } from "../../../common/date";
 
 /**
  * 講座のリポジトリを管理するクラス
@@ -34,5 +36,24 @@ export class CourseRepository {
   async isCourseExist(courseId: string): Promise<boolean> {
     const course = await this.getCourseById(courseId);
     return !!course;
+  }
+
+  /**
+   * 講座を登録する
+   * @param title 講座のタイトル
+   * @returns {Promise<Course>} 登録された講座オブジェクト
+   */
+  async registerCourse(title: string): Promise<Course> {
+    const currentJstDate = getCurrentJstDate();
+    const [data] = await db
+      .insert(course)
+      .values({
+        id: createId(),
+        title,
+        createDate: currentJstDate,
+        updateDate: currentJstDate,
+      })
+      .returning();
+    return data;
   }
 }

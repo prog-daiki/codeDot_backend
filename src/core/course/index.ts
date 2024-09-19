@@ -6,6 +6,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { CourseNotFoundError } from "../../error/CourseNotFoundError";
 import { Entity, Messages } from "../../common/message";
+import { insertCourseSchema } from "../../../db/schema";
 
 const Course = new Hono<{
   Variables: {
@@ -55,6 +56,29 @@ Course.get(
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座取得エラー");
+    }
+  },
+);
+
+/**
+ * 講座登録API
+ * @route POST /
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns {Promise<Response>} 講座のJSONレスポンス
+ * @throws {Error} 講座登録に失敗した場合
+ */
+Course.post(
+  "/",
+  validateAdminMiddleware,
+  zValidator("json", insertCourseSchema.pick({ title: true })),
+  async (c) => {
+    const validatedData = c.req.valid("json");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const course = await courseUseCase.registerCourse(validatedData.title);
+      return c.json(course);
+    } catch (error) {
+      return HandleError(c, error, "講座登録エラー");
     }
   },
 );
