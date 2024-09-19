@@ -42,4 +42,20 @@ export class CourseUseCase {
   async registerCourse(title: string): Promise<Course> {
     return await this.courseRepository.registerCourse(title);
   }
+
+  /**
+   * 講座のタイトルを更新する
+   * @param courseId 講座ID
+   * @param title 講座のタイトル
+   * @returns 更新された講座
+   */
+  async updateCourseTitle(courseId: string, title: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    return await this.courseRepository.updateCourse(courseId, { title });
+  }
 }

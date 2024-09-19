@@ -33,7 +33,7 @@ export class CourseRepository {
    * @param courseId 講座ID
    * @returns {Promise<boolean>} 講座が存在する場合はtrue、そうでない場合はfalse
    */
-  async isCourseExist(courseId: string): Promise<boolean> {
+  async isCourseExists(courseId: string): Promise<boolean> {
     const course = await this.getCourseById(courseId);
     return !!course;
   }
@@ -53,6 +53,28 @@ export class CourseRepository {
         createDate: currentJstDate,
         updateDate: currentJstDate,
       })
+      .returning();
+    return data;
+  }
+
+  /**
+   * 講座を更新する
+   * @param courseId 講座ID
+   * @param updateData 更新するデータ
+   * @returns 更新された講座
+   */
+  async updateCourse(
+    courseId: string,
+    updateData: Partial<Omit<typeof course.$inferInsert, "id" | "createDate">>,
+  ) {
+    const currentJstDate = getCurrentJstDate();
+    const [data] = await db
+      .update(course)
+      .set({
+        ...updateData,
+        updateDate: currentJstDate,
+      })
+      .where(eq(course.id, courseId))
       .returning();
     return data;
   }
