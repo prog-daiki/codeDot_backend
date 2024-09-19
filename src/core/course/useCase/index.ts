@@ -74,4 +74,20 @@ export class CourseUseCase {
 
     return await this.courseRepository.updateCourse(courseId, { description });
   }
+
+  /**
+   * 講座のサムネイルを更新する
+   * @param courseId 講座ID
+   * @param imageUrl 講座のサムネイル
+   * @returns 更新された講座
+   */
+  async updateCourseThumbnail(courseId: string, imageUrl: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    return await this.courseRepository.updateCourse(courseId, { imageUrl });
+  }
 }
