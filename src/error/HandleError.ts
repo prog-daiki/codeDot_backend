@@ -11,8 +11,8 @@ import type { StatusCode } from "hono/utils/http-status";
 export const HandleError = (c: Context, error: unknown, message: string) => {
   console.error(`${message}:`, error);
 
-  let statusCode: StatusCode = 500;
-  let errorMessage: string = "予期せぬエラーが発生しました";
+  const statusCode: StatusCode = 500;
+  const errorMessage: string = "予期せぬエラーが発生しました";
 
   return c.json({ error: errorMessage }, statusCode);
 };
