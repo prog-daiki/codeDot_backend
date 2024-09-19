@@ -106,4 +106,20 @@ export class CourseUseCase {
 
     return await this.courseRepository.updateCourse(courseId, { price });
   }
+
+  /**
+   * 講座のソースコードを更新する
+   * @param courseId 講座ID
+   * @param sourceUrl 講座のソースコード
+   * @returns 更新された講座
+   */
+  async updateCourseSourceUrl(courseId: string, sourceUrl: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    return await this.courseRepository.updateCourse(courseId, { sourceUrl });
+  }
 }
