@@ -6,6 +6,8 @@ import { insertCategorySchema } from "../../../db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { validateAdminMiddleware } from "../../auth/validateAdminMiddleware";
 import { z } from "zod";
+import { Entity, Messages } from "../../common/message";
+import { CategoryNotFoundError } from "../../error/CategoryNotFoundError";
 
 const Category = new Hono<{
   Variables: {
@@ -36,7 +38,7 @@ Category.get("/", validateAuthMiddleware, async (c) => {
 /**
  * カテゴリー登録API
  * @route POST /categories
- * @middleware validateAuthMiddleware - 認証済みのユーザーのみアクセス可能
+ * @middleware validateAuthMiddleware - 管理者のみアクセス可能
  * @returns {Promise<Response>} カテゴリーのJSONレスポンス
  * @throws {Error} カテゴリー登録に失敗した場合
  */
@@ -59,7 +61,7 @@ Category.post(
 /**
  * カテゴリー編集API
  * @route PUT /categories/:category_id
- * @middleware validateAdminMiddleware - 認証済みのユーザーのみアクセス可能
+ * @middleware validateAdminMiddleware - 管理者のみアクセス可能
  * @returns {Promise<Response>} カテゴリーのJSONレスポンス
  * @throws {Error} カテゴリー更新に失敗した場合
  */
@@ -76,7 +78,36 @@ Category.put(
       const categories = await categoryUseCase.updateCategoryName(categoryId, validatedData.name);
       return c.json(categories);
     } catch (error) {
+      if (error instanceof CategoryNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
+      }
       return HandleError(c, error, "カテゴリー更新エラー");
+    }
+  },
+);
+
+/**
+ * カテゴリー削除API
+ * @route DELETE /categories/:category_id
+ * @middleware validateAdminMiddleware - 管理者のみアクセス可能
+ * @returns {Promise<Response>} カテゴリーのJSONレスポンス
+ * @throws {Error} カテゴリー削除に失敗した場合
+ */
+Category.delete(
+  "/:category_id",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ category_id: z.string() })),
+  async (c) => {
+    const { category_id: categoryId } = c.req.valid("param");
+    const categoryUseCase = c.get("categoryUseCase");
+    try {
+      const category = await categoryUseCase.deleteCategory(categoryId);
+      return c.json(category);
+    } catch (error) {
+      if (error instanceof CategoryNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
+      }
+      return HandleError(c, error, "カテゴリー削除エラー");
     }
   },
 );

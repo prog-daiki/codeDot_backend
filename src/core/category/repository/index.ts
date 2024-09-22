@@ -70,4 +70,14 @@ export class CategoryRepository {
       .returning();
     return data;
   }
+
+  /**
+   * カテゴリーを削除する
+   * @param categoryId カテゴリーID
+   * @returns {Promise<Category>} 削除したカテゴリーのオブジェクト
+   */
+  async deleteCategory(categoryId: string): Promise<Category> {
+    const [data] = await db.delete(category).where(eq(category.id, categoryId)).returning();
+    return data;
+  }
 }

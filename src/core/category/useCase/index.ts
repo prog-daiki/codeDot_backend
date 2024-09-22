@@ -31,9 +31,18 @@ export class CategoryUseCase {
    * カテゴリー名を更新する
    * @param categoryId カテゴリーID
    * @param name カテゴリー名
-   * @returns
+   * @returns 更新したカテゴリーのオブジェクト
    */
   async updateCategoryName(categoryId: string, name: string): Promise<Category> {
     return await this.categoryRepository.updateCategory(categoryId, { name });
+  }
+
+  /**
+   * カテゴリーを削除する
+   * @param categoryId カテゴリーID
+   * @returns 削除したカテゴリーのオブジェクト
+   */
+  async deleteCategory(categoryId: string): Promise<Category> {
+    return await this.categoryRepository.deleteCategory(categoryId);
   }
 }
