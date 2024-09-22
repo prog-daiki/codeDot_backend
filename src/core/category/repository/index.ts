@@ -52,4 +52,22 @@ export class CategoryRepository {
       .returning();
     return data;
   }
+
+  /**
+   * カテゴリーを更新する
+   * @param categoryId カテゴリーID
+   * @param updateData 更新するデータ
+   * @returns {Promise<Category>} 更新したカテゴリーのオブジェクト
+   */
+  async updateCategory(
+    categoryId: string,
+    updateData: Partial<Omit<typeof category.$inferInsert, "id">>,
+  ): Promise<Category> {
+    const [data] = await db
+      .update(category)
+      .set({ ...updateData })
+      .where(eq(category.id, categoryId))
+      .returning();
+    return data;
+  }
 }

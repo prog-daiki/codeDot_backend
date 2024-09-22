@@ -5,6 +5,7 @@ import { CategoryUseCase } from "./useCase";
 import { insertCategorySchema } from "../../../db/schema";
 import { zValidator } from "@hono/zod-validator";
 import { validateAdminMiddleware } from "../../auth/validateAdminMiddleware";
+import { z } from "zod";
 
 const Category = new Hono<{
   Variables: {
@@ -51,6 +52,31 @@ Category.post(
       return c.json(categories);
     } catch (error) {
       return HandleError(c, error, "カテゴリー登録エラー");
+    }
+  },
+);
+
+/**
+ * カテゴリー編集API
+ * @route PUT /categories/:category_id
+ * @middleware validateAdminMiddleware - 認証済みのユーザーのみアクセス可能
+ * @returns {Promise<Response>} カテゴリーのJSONレスポンス
+ * @throws {Error} カテゴリー更新に失敗した場合
+ */
+Category.put(
+  "/:category_id",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ category_id: z.string() })),
+  zValidator("json", insertCategorySchema.pick({ name: true })),
+  async (c) => {
+    const validatedData = c.req.valid("json");
+    const { category_id: categoryId } = c.req.valid("param");
+    const categoryUseCase = c.get("categoryUseCase");
+    try {
+      const categories = await categoryUseCase.updateCategoryName(categoryId, validatedData.name);
+      return c.json(categories);
+    } catch (error) {
+      return HandleError(c, error, "カテゴリー更新エラー");
     }
   },
 );

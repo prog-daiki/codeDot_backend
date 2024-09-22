@@ -26,4 +26,14 @@ export class CategoryUseCase {
   async registerCategory(name: string): Promise<Category> {
     return await this.categoryRepository.registerCategory(name);
   }
+
+  /**
+   * カテゴリー名を更新する
+   * @param categoryId カテゴリーID
+   * @param name カテゴリー名
+   * @returns
+   */
+  async updateCategoryName(categoryId: string, name: string): Promise<Category> {
+    return await this.categoryRepository.updateCategory(categoryId, { name });
+  }
 }
