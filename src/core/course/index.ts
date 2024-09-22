@@ -7,6 +7,7 @@ import { z } from "zod";
 import { CourseNotFoundError } from "../../error/CourseNotFoundError";
 import { Entity, Messages } from "../../common/message";
 import { insertCourseSchema } from "../../../db/schema";
+import { CategoryNotFoundError } from "../../error/CategoryNotFoundError";
 
 const Course = new Hono<{
   Variables: {
@@ -194,6 +195,36 @@ Course.put(
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座価格編集エラー");
+    }
+  },
+);
+
+/**
+ * 講座カテゴリー編集API
+ * @route PUT /:course_id/category
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns {Promise<Response>} 講座のJSONレスポンス
+ * @throws {Error} 講座カテゴリー編集に失敗した場合
+ */
+Course.put(
+  "/:course_id/category",
+  validateAdminMiddleware,
+  zValidator("json", insertCourseSchema.pick({ categoryId: true })),
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const validatedData = c.req.valid("json");
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const course = await courseUseCase.updateCourseCategory(courseId, validatedData.categoryId);
+      return c.json(course);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      } else if (error instanceof CategoryNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
+      }
+      return HandleError(c, error, "講座カテゴリー編集エラー");
     }
   },
 );
