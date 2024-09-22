@@ -2,6 +2,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
 import { category } from "../../../../db/schema";
 import type { Category } from "../types";
+import { createId } from "@paralleldrive/cuid2";
 
 /**
  * カテゴリーのリポジトリを管理するクラス
@@ -34,5 +35,21 @@ export class CategoryRepository {
   async isCategoryExists(id: string): Promise<boolean> {
     const category = await this.getCategoryById(id);
     return !!category;
+  }
+
+  /**
+   * カテゴリーを登録する
+   * @param name カテゴリーの名前
+   * @returns {Promise<Category>} 登録したカテゴリーのオブジェクト
+   */
+  async registerCategory(name: string): Promise<Category> {
+    const [data] = await db
+      .insert(category)
+      .values({
+        id: createId(),
+        name,
+      })
+      .returning();
+    return data;
   }
 }

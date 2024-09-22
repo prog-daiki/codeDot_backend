@@ -17,4 +17,13 @@ export class CategoryUseCase {
   async getCategories(): Promise<Category[]> {
     return await this.categoryRepository.getCategories();
   }
+
+  /**
+   * カテゴリーを登録する
+   * @param name カテゴリーの名前
+   * @returns 登録したカテゴリーのオブジェクト
+   */
+  async registerCategory(name: string): Promise<Category> {
+    return await this.categoryRepository.registerCategory(name);
+  }
 }

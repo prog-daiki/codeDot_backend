@@ -2,6 +2,9 @@ import { Hono } from "hono";
 import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
 import { HandleError } from "../../error/HandleError";
 import { CategoryUseCase } from "./useCase";
+import { insertCategorySchema } from "../../../db/schema";
+import { zValidator } from "@hono/zod-validator";
+import { validateAdminMiddleware } from "../../auth/validateAdminMiddleware";
 
 const Category = new Hono<{
   Variables: {
@@ -15,7 +18,7 @@ const Category = new Hono<{
 /**
  * カテゴリー一覧取得API
  * @route GET /categories
- * @middleware validateAuth - 認証済みのユーザーのみアクセス可能
+ * @middleware validateAuthMiddleware - 認証済みのユーザーのみアクセス可能
  * @returns {Promise<Response>} カテゴリーのJSONレスポンス
  * @throws {Error} カテゴリー一覧取得に失敗した場合
  */
@@ -28,5 +31,28 @@ Category.get("/", validateAuthMiddleware, async (c) => {
     return HandleError(c, error, "カテゴリー一覧取得エラー");
   }
 });
+
+/**
+ * カテゴリー登録API
+ * @route POST /categories
+ * @middleware validateAuthMiddleware - 認証済みのユーザーのみアクセス可能
+ * @returns {Promise<Response>} カテゴリーのJSONレスポンス
+ * @throws {Error} カテゴリー登録に失敗した場合
+ */
+Category.post(
+  "/",
+  validateAdminMiddleware,
+  zValidator("json", insertCategorySchema.pick({ name: true })),
+  async (c) => {
+    const validatedData = c.req.valid("json");
+    const categoryUseCase = c.get("categoryUseCase");
+    try {
+      const categories = await categoryUseCase.registerCategory(validatedData.name);
+      return c.json(categories);
+    } catch (error) {
+      return HandleError(c, error, "カテゴリー登録エラー");
+    }
+  },
+);
 
 export default Category;
