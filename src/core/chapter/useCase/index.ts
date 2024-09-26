@@ -1,3 +1,4 @@
+import { ChapterNotFoundError } from "../../../error/ChapterNotFoundError";
 import { CourseNotFoundError } from "../../../error/CourseNotFoundError";
 import { CourseRepository } from "../../course/repository";
 import { ChapterRepository } from "../repository";
@@ -27,5 +28,27 @@ export class ChapterUseCase {
       throw new CourseNotFoundError();
     }
     return await this.chapterRepository.getChapters(courseId);
+  }
+
+  /**
+   * チャプターを取得する
+   * @param courseId 講座ID
+   * @param chapterId チャプターID
+   * @returns チャプター
+   */
+  async getChapter(courseId: string, chapterId: string): Promise<Chapter> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    // チャプターの存在チェック
+    const isChapterExists = await this.chapterRepository.isChapterExists(chapterId);
+    if (!isChapterExists) {
+      throw new ChapterNotFoundError();
+    }
+
+    return await this.chapterRepository.getChapterById(chapterId);
   }
 }
