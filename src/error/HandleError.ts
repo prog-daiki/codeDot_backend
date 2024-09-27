@@ -12,7 +12,7 @@ export const HandleError = (c: Context, error: unknown, message: string) => {
   console.error(`${message}:`, error);
 
   const statusCode: StatusCode = 500;
-  const errorMessage: string = "予期せぬエラーが発生しました";
+  const errorMessage: string = message;
 
   return c.json({ error: errorMessage }, statusCode);
 };

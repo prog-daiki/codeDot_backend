@@ -20,18 +20,19 @@ const Course = new Hono<{
 
 /**
  * 講座一覧取得API
- * @route GET /
+ * @route GET /api/courses
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座一覧のJSONレスポンス
- * @throws {Error} 講座一覧取得に失敗した場合
+ * @returns 講座一覧
+ * @throws 講座一覧取得エラー
  */
 Course.get("/", validateAdminMiddleware, async (c) => {
   const courseUseCase = c.get("courseUseCase");
   try {
     const courses = await courseUseCase.getCourses();
+    console.log(`講座一覧を取得しました: ${courses.length}件`);
     return c.json(courses);
   } catch (error) {
-    return HandleError(c, error, "講座一覧取得エラー");
+    return HandleError(c, error, "講座一覧取得エラーが発生しました。");
   }
 });
 
