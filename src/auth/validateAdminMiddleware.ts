@@ -8,10 +8,7 @@ import { Messages } from "../common/message";
  * @param {Next} next - 次のミドルウェア関数
  * @returns {Promise<Response | void>} 認証エラー時はJSONレスポンス、成功時は次のミドルウェアを実行
  */
-export const validateAdminMiddleware = async (
-  c: Context,
-  next: Next
-): Promise<Response | void> => {
+export const validateAdminMiddleware = async (c: Context, next: Next): Promise<Response | void> => {
   const auth = getAuth(c);
 
   if (!auth?.userId) {
