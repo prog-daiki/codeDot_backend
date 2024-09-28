@@ -38,10 +38,11 @@ Course.get("/", validateAdminMiddleware, async (c) => {
 
 /**
  * 講座取得API
- * @route GET /:course_id
+ * @route GET /api/courses/:course_id
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座取得に失敗した場合
+ * @returns 講座
+ * @throws CourseNotFoundError
+ * @throws 講座取得エラー
  */
 Course.get(
   "/:course_id",

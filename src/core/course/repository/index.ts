@@ -11,7 +11,7 @@ import { getCurrentJstDate } from "../../../common/date";
 export class CourseRepository {
   /**
    * 全ての講座を作成日の降順で取得する
-   * @returns {Promise<Course[]>} 講座の配列
+   * @returns {Promise<Course[]>} 講座一覧
    */
   async getAllCoursesSortedByCreateDate(): Promise<Course[]> {
     const data = await db.select().from(course).orderBy(desc(course.createDate));
@@ -21,7 +21,7 @@ export class CourseRepository {
   /**
    * 指定されたIDの講座を取得する
    * @param courseId 講座ID
-   * @returns {Promise<Course | null>} 講座オブジェクト、存在しない場合はnull
+   * @returns {Promise<Course | null>} 講座
    */
   async getCourseById(courseId: string): Promise<Course> {
     const [data] = await db.select().from(course).where(eq(course.id, courseId));
