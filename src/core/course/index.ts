@@ -66,10 +66,10 @@ Course.get(
 
 /**
  * 講座登録API
- * @route POST /
+ * @route POST /api/courses
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座登録に失敗した場合
+ * @returns 登録した講座
+ * @throws 講座登録エラー
  */
 Course.post(
   "/",
