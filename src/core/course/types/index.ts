@@ -5,7 +5,7 @@ export type Course = {
   imageUrl: string | null;
   price: number | null;
   sourceUrl: string | null;
-  publishFlag: boolean | null;
+  publishFlag: boolean;
   categoryId: string | null;
   createDate: Date;
   updateDate: Date;
