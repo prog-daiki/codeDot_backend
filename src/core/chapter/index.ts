@@ -20,10 +20,11 @@ const Chapter = new Hono<{
 
 /**
  * チャプター一覧取得API
- * @route GET /courses/{course_id}/chapters
+ * @route GET /api/courses/{course_id}/chapters
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} チャプター一覧
- * @throws {Error} チャプター一覧取得に失敗した場合
+ * @returns チャプター一覧
+ * @throws CourseNotFoundError
+ * @throws チャプター一覧取得エラー
  */
 Chapter.get(
   "/",
@@ -37,6 +38,7 @@ Chapter.get(
       return c.json(chapters);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json(Messages.MSG_ERR_003(Entity.COURSE), 404);
       }
       return HandleError(c, error, "チャプター一覧取得エラー");
