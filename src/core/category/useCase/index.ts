@@ -1,3 +1,4 @@
+import { CategoryNotFoundError } from "../../../error/CategoryNotFoundError";
 import { CategoryRepository } from "../repository";
 import type { Category } from "../types";
 
@@ -21,19 +22,25 @@ export class CategoryUseCase {
   /**
    * カテゴリーを登録する
    * @param name カテゴリーの名前
-   * @returns 登録したカテゴリーのオブジェクト
+   * @returns 登録したカテゴリー
    */
   async registerCategory(name: string): Promise<Category> {
     return await this.categoryRepository.registerCategory(name);
   }
 
   /**
-   * カテゴリー名を更新する
+   * カテゴリー名を編集する
    * @param categoryId カテゴリーID
    * @param name カテゴリー名
-   * @returns 更新したカテゴリーのオブジェクト
+   * @returns 更新したカテゴリー
    */
   async updateCategoryName(categoryId: string, name: string): Promise<Category> {
+    // カテゴリーの存在チェック
+    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    if (!isCategoryExists) {
+      throw new CategoryNotFoundError();
+    }
+
     return await this.categoryRepository.updateCategory(categoryId, { name });
   }
 
@@ -43,6 +50,12 @@ export class CategoryUseCase {
    * @returns 削除したカテゴリーのオブジェクト
    */
   async deleteCategory(categoryId: string): Promise<Category> {
+    // カテゴリーの存在チェック
+    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    if (!isCategoryExists) {
+      throw new CategoryNotFoundError();
+    }
+
     return await this.categoryRepository.deleteCategory(categoryId);
   }
 }
