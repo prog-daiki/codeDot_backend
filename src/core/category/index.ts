@@ -91,10 +91,11 @@ Category.put(
 
 /**
  * カテゴリー削除API
- * @route DELETE /categories/:category_id
+ * @route DELETE /api/categories/:category_id
  * @middleware validateAdminMiddleware - 管理者のみアクセス可能
- * @returns {Promise<Response>} カテゴリーのJSONレスポンス
- * @throws {Error} カテゴリー削除に失敗した場合
+ * @returns 削除したカテゴリー
+ * @throws CategoryNotFoundError
+ * @throws カテゴリー削除エラー
  */
 Category.delete(
   "/:category_id",
@@ -108,6 +109,7 @@ Category.delete(
       return c.json(category);
     } catch (error) {
       if (error instanceof CategoryNotFoundError) {
+        console.error(`存在しないカテゴリーです: ID ${categoryId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
       }
       return HandleError(c, error, "カテゴリー削除エラー");

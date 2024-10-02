@@ -50,6 +50,12 @@ export class CategoryUseCase {
    * @returns 削除したカテゴリーのオブジェクト
    */
   async deleteCategory(categoryId: string): Promise<Category> {
+    // カテゴリーの存在チェック
+    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    if (!isCategoryExists) {
+      throw new CategoryNotFoundError();
+    }
+
     return await this.categoryRepository.deleteCategory(categoryId);
   }
 }
