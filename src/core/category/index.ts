@@ -21,7 +21,7 @@ const Category = new Hono<{
 /**
  * カテゴリー一覧取得API
  * @route GET /api/categories
- * @middleware validateAuthMiddleware - 認証済みのユーザーのみアクセス可能
+ * @middleware validateAuthMiddleware - 認証されたユーザーか検証
  * @returns カテゴリーのJSONレスポンス
  * @throws CategoryNotFoundError
  * @throws カテゴリー一覧取得エラー
@@ -38,10 +38,10 @@ Category.get("/", validateAuthMiddleware, async (c) => {
 
 /**
  * カテゴリー登録API
- * @route POST /categories
- * @middleware validateAuthMiddleware - 管理者のみアクセス可能
- * @returns {Promise<Response>} カテゴリーのJSONレスポンス
- * @throws {Error} カテゴリー登録に失敗した場合
+ * @route POST /api/categories
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 登録したカテゴリー
+ * @throws カテゴリー登録エラー
  */
 Category.post(
   "/",
@@ -51,8 +51,8 @@ Category.post(
     const validatedData = c.req.valid("json");
     const categoryUseCase = c.get("categoryUseCase");
     try {
-      const categories = await categoryUseCase.registerCategory(validatedData.name);
-      return c.json(categories);
+      const category = await categoryUseCase.registerCategory(validatedData.name);
+      return c.json(category);
     } catch (error) {
       return HandleError(c, error, "カテゴリー登録エラー");
     }
