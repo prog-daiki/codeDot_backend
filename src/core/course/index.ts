@@ -152,10 +152,11 @@ Course.put(
 
 /**
  * 講座サムネイル編集API
- * @route PUT /:course_id/thumbnail
+ * @route PUT /api/courses/:course_id/thumbnail
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座サムネイル編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座サムネイル編集エラー
  */
 Course.put(
   "/:course_id/thumbnail",
@@ -171,6 +172,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座サムネイル編集エラー");
