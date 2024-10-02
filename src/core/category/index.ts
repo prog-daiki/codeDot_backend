@@ -20,10 +20,11 @@ const Category = new Hono<{
 
 /**
  * カテゴリー一覧取得API
- * @route GET /categories
+ * @route GET /api/categories
  * @middleware validateAuthMiddleware - 認証済みのユーザーのみアクセス可能
- * @returns {Promise<Response>} カテゴリーのJSONレスポンス
- * @throws {Error} カテゴリー一覧取得に失敗した場合
+ * @returns カテゴリーのJSONレスポンス
+ * @throws CategoryNotFoundError
+ * @throws カテゴリー一覧取得エラー
  */
 Category.get("/", validateAuthMiddleware, async (c) => {
   const categoryUseCase = c.get("categoryUseCase");

@@ -89,10 +89,11 @@ Course.post(
 
 /**
  * 講座タイトル編集API
- * @route PUT /:course_id/title
+ * @route PUT /api/courses/:course_id/title
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座タイトル編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座タイトル編集エラー
  */
 Course.put(
   "/:course_id/title",
@@ -108,6 +109,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座タイトル編集エラー");
@@ -117,10 +119,11 @@ Course.put(
 
 /**
  * 講座詳細編集API
- * @route PUT /:course_id/description
+ * @route PUT /api/courses/:course_id/description
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座詳細編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座詳細編集エラー
  */
 Course.put(
   "/:course_id/description",
@@ -139,6 +142,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座詳細編集エラー");
@@ -148,10 +152,11 @@ Course.put(
 
 /**
  * 講座サムネイル編集API
- * @route PUT /:course_id/thumbnail
+ * @route PUT /api/courses/:course_id/thumbnail
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座サムネイル編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座サムネイル編集エラー
  */
 Course.put(
   "/:course_id/thumbnail",
@@ -167,6 +172,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座サムネイル編集エラー");
@@ -176,10 +182,11 @@ Course.put(
 
 /**
  * 講座価格編集API
- * @route PUT /:course_id/price
+ * @route PUT /api/courses/:course_id/price
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座価格編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座価格編集エラー
  */
 Course.put(
   "/:course_id/price",
@@ -195,6 +202,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座価格編集エラー");
@@ -204,10 +212,11 @@ Course.put(
 
 /**
  * 講座カテゴリー編集API
- * @route PUT /:course_id/category
+ * @route PUT /api/courses/:course_id/category
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座カテゴリー編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座カテゴリー編集エラー
  */
 Course.put(
   "/:course_id/category",
@@ -223,8 +232,10 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       } else if (error instanceof CategoryNotFoundError) {
+        console.error(`存在しないカテゴリーです: ID ${validatedData.categoryId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
       }
       return HandleError(c, error, "講座カテゴリー編集エラー");
@@ -234,10 +245,11 @@ Course.put(
 
 /**
  * 講座ソースコード編集API
- * @route PUT /:course_id/source_url
+ * @route PUT /api/courses/:course_id/source_url
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座ソースコード編集に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座ソースコード編集エラー
  */
 Course.put(
   "/:course_id/source_url",
@@ -253,6 +265,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座ソースコード編集エラー");
@@ -262,10 +275,11 @@ Course.put(
 
 /**
  * 講座非公開API
- * @route PUT /:course_id/unpublish
+ * @route PUT /api/courses/:course_id/unpublish
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} 講座のJSONレスポンス
- * @throws {Error} 講座非公開に失敗した場合
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws 講座非公開エラー
  */
 Course.put(
   "/:course_id/unpublish",
@@ -279,6 +293,7 @@ Course.put(
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座非公開エラー");
