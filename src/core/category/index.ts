@@ -61,10 +61,11 @@ Category.post(
 
 /**
  * カテゴリー編集API
- * @route PUT /categories/:category_id
+ * @route PUT /api/categories/:category_id
  * @middleware validateAdminMiddleware - 管理者のみアクセス可能
- * @returns {Promise<Response>} カテゴリーのJSONレスポンス
- * @throws {Error} カテゴリー更新に失敗した場合
+ * @returns 更新したカテゴリー
+ * @throws CategoryNotFoundError
+ * @throws カテゴリー編集エラー
  */
 Category.put(
   "/:category_id",
@@ -76,13 +77,14 @@ Category.put(
     const { category_id: categoryId } = c.req.valid("param");
     const categoryUseCase = c.get("categoryUseCase");
     try {
-      const categories = await categoryUseCase.updateCategoryName(categoryId, validatedData.name);
-      return c.json(categories);
+      const category = await categoryUseCase.updateCategoryName(categoryId, validatedData.name);
+      return c.json(category);
     } catch (error) {
       if (error instanceof CategoryNotFoundError) {
+        console.error(`存在しないカテゴリーです: ID ${categoryId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.CATEGORY) }, 404);
       }
-      return HandleError(c, error, "カテゴリー更新エラー");
+      return HandleError(c, error, "カテゴリー編集エラー");
     }
   },
 );
