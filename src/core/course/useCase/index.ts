@@ -1,6 +1,8 @@
 import { CategoryNotFoundError } from "../../../error/CategoryNotFoundError";
 import { CourseNotFoundError } from "../../../error/CourseNotFoundError";
+import { CourseRequiredFieldsEmptyError } from "../../../error/CourseRequiredFieldsEmptyError";
 import { CategoryRepository } from "../../category/repository";
+import { ChapterRepository } from "../../chapter/repository";
 import { CourseRepository } from "../repository";
 import type { Course } from "../types";
 
@@ -10,10 +12,12 @@ import type { Course } from "../types";
 export class CourseUseCase {
   private courseRepository: CourseRepository;
   private categoryRepository: CategoryRepository;
+  private chapterRepository: ChapterRepository;
 
   constructor() {
     this.courseRepository = new CourseRepository();
     this.categoryRepository = new CategoryRepository();
+    this.chapterRepository = new ChapterRepository();
   }
 
   /**
@@ -163,5 +167,39 @@ export class CourseUseCase {
     }
 
     return await this.courseRepository.updateCourse(courseId, { publishFlag: false });
+  }
+
+  /**
+   * 講座を公開する
+   * @param courseId 講座ID
+   * @returns 公開された講座
+   */
+  async publishCourse(courseId: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    // 講座と公開されているチャプターを取得する
+    const course = await this.courseRepository.getCourseById(courseId);
+    const publishChapters = await this.chapterRepository.getPublishChapters(courseId);
+
+    // 講座の必須項目を満たしているかチェック
+    if (
+      publishChapters.length === 0 ||
+      !course.title ||
+      !course.description ||
+      !course.imageUrl ||
+      !course.categoryId ||
+      course.price === null
+    ) {
+      throw new CourseRequiredFieldsEmptyError();
+    }
+
+    const updatedCourse = await this.courseRepository.updateCourse(courseId, {
+      publishFlag: true,
+    });
+    return updatedCourse;
   }
 }

@@ -8,6 +8,7 @@ import { CourseNotFoundError } from "../../error/CourseNotFoundError";
 import { Entity, Messages } from "../../common/message";
 import { insertCourseSchema } from "../../../db/schema";
 import { CategoryNotFoundError } from "../../error/CategoryNotFoundError";
+import { CourseRequiredFieldsEmptyError } from "../../error/CourseRequiredFieldsEmptyError";
 
 const Course = new Hono<{
   Variables: {
@@ -297,6 +298,38 @@ Course.put(
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座非公開エラー");
+    }
+  },
+);
+
+/**
+ * 講座公開API
+ * @route PUT /api/courses/:course_id/publish
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 更新した講座
+ * @throws CourseNotFoundError
+ * @throws CourseRequiredFieldsEmptyError
+ * @throws 講座公開エラー
+ */
+Course.put(
+  "/:course_id/publish",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const course = await courseUseCase.publishCourse(courseId);
+      return c.json(course);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      if (error instanceof CourseRequiredFieldsEmptyError) {
+        return c.json({ error: Messages.MSG_ERR_004 }, 400);
+      }
+      return HandleError(c, error, "講座公開エラー");
     }
   },
 );

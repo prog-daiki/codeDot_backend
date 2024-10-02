@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
 import { chapter } from "../../../../db/schema";
 import type { Chapter } from "../types";
@@ -21,6 +21,20 @@ export class ChapterRepository {
       .where(eq(chapter.courseId, courseId))
       .orderBy(asc(chapter.position));
     return data;
+  }
+
+  /**
+   * 講座に紐づくチャプター(公開済み)を一覧取得する
+   * @param courseId
+   * @returns
+   */
+  async getPublishChapters(courseId: string) {
+    const chapters = await db
+      .select()
+      .from(chapter)
+      .where(and(eq(chapter.courseId, courseId), eq(chapter.publishFlag, true)))
+      .orderBy(asc(chapter.position));
+    return chapters;
   }
 
   /**
