@@ -80,10 +80,11 @@ Chapter.get(
 
 /**
  * チャプター登録API
- * @route POST /courses/{course_id}/chapters
+ * @route POST /api/courses/{course_id}/chapters
  * @middleware validateAdminMiddleware - 管理者権限の検証
- * @returns {Promise<Response>} チャプター
- * @throws {Error} チャプター登録に失敗した場合
+ * @returns チャプター
+ * @throws CourseNotFoundError
+ * @throws チャプター登録エラー
  */
 Chapter.post(
   "/",
@@ -99,6 +100,7 @@ Chapter.post(
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json(Messages.MSG_ERR_003(Entity.COURSE), 404);
       }
       return HandleError(c, error, "チャプター登録エラー");
