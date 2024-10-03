@@ -225,4 +225,39 @@ Chapter.put(
   },
 );
 
+/**
+ * チャプター並び替えAPI
+ * @route PUT /api/courses/{course_id}/chapters/reorder
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 200
+ * @throws CourseNotFoundError
+ * @throws チャプター並び替えエラー
+ */
+Chapter.put(
+  "/reorder",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  zValidator(
+    "json",
+    z.object({
+      list: z.array(z.object({ id: z.string(), position: z.number() })),
+    }),
+  ),
+  async (c) => {
+    const { list } = c.req.valid("json");
+    const { course_id: courseId } = c.req.valid("param");
+    const chapterUseCase = c.get("chapterUseCase");
+    try {
+      await chapterUseCase.reorderChapters(courseId, list);
+      return c.json({ status: 200 });
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      return HandleError(c, error, "チャプター並び替えエラー");
+    }
+  },
+);
+
 export default Chapter;

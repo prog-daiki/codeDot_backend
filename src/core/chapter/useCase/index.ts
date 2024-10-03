@@ -167,4 +167,25 @@ export class ChapterUseCase {
 
     return await this.chapterRepository.updateChapter(chapterId, { videoUrl });
   }
+
+  /**
+   * 講座のチャプターを並び替える
+   * @param courseId 講座ID
+   * @param list チャプターリスト
+   */
+  async reorderChapters(courseId: string, list: { id: string; position: number }[]) {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    await Promise.all(
+      list.map(async (chapter) => {
+        await this.chapterRepository.updateChapter(chapter.id, {
+          position: chapter.position,
+        });
+      }),
+    );
+  }
 }
