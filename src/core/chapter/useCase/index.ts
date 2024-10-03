@@ -67,4 +67,26 @@ export class ChapterUseCase {
 
     return await this.chapterRepository.registerChapter(courseId, title);
   }
+
+  /**
+   * チャプターのタイトルを更新する
+   * @param courseId 講座ID
+   * @param chapterId チャプターID
+   * @param title チャプター名
+   */
+  async updateChapterTitle(courseId: string, chapterId: string, title: string): Promise<Chapter> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    // チャプターの存在チェック
+    const isChapterExists = await this.chapterRepository.isChapterExists(chapterId);
+    if (!isChapterExists) {
+      throw new ChapterNotFoundError();
+    }
+
+    return await this.chapterRepository.updateChapter(chapterId, { title });
+  }
 }

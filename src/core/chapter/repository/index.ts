@@ -80,4 +80,23 @@ export class ChapterRepository {
       .returning();
     return data;
   }
+
+  /**
+   * チャプターを更新する
+   * @param chapterId チャプターID
+   * @param updateData 更新データ
+   * @returns 更新したチャプター
+   */
+  async updateChapter(
+    chapterId: string,
+    updateData: Partial<Omit<typeof chapter.$inferInsert, "id" | "createDate">>,
+  ) {
+    const currentJstDate = getCurrentJstDate();
+    const [data] = await db
+      .update(chapter)
+      .set({ ...updateData, updateDate: currentJstDate })
+      .where(eq(chapter.id, chapterId))
+      .returning();
+    return data;
+  }
 }

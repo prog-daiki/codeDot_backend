@@ -108,4 +108,43 @@ Chapter.post(
   },
 );
 
+/**
+ * チャプタータイトル編集API
+ * @route PUT /api/courses/{course_id}/chapters/{chapter_id}/title
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 更新したチャプター
+ * @throws CourseNotFoundError
+ * @throws ChapterNotFoundError
+ * @throws チャプタータイトル編集エラー
+ */
+Chapter.put(
+  "/:chapter_id/title",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ chapter_id: z.string(), course_id: z.string() })),
+  zValidator("json", insertChapterSchema.pick({ title: true })),
+  async (c) => {
+    const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
+    const validatedData = c.req.valid("json");
+    const chapterUseCase = c.get("chapterUseCase");
+    try {
+      const chapter = await chapterUseCase.updateChapterTitle(
+        courseId,
+        chapterId,
+        validatedData.title,
+      );
+      return c.json(chapter);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      if (error instanceof ChapterNotFoundError) {
+        console.error(`存在しないチャプターです: ID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CHAPTER) }, 404);
+      }
+      return HandleError(c, error, "チャプタータイトル編集エラー");
+    }
+  },
+);
+
 export default Chapter;
