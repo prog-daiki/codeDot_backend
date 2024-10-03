@@ -260,4 +260,37 @@ Chapter.put(
   },
 );
 
+/**
+ * チャプター削除API
+ * @route DELETE /api/courses/{course_id}/chapters/{chapter_id}
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 削除したチャプター
+ * @throws CourseNotFoundError
+ * @throws ChapterNotFoundError
+ * @throws チャプター削除エラー
+ */
+Chapter.delete(
+  "/:chapter_id",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ chapter_id: z.string(), course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
+    const chapterUseCase = c.get("chapterUseCase");
+    try {
+      const chapter = await chapterUseCase.deleteChapter(courseId, chapterId);
+      return c.json(chapter);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      if (error instanceof ChapterNotFoundError) {
+        console.error(`存在しないチャプターです: ID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CHAPTER) }, 404);
+      }
+      return HandleError(c, error, "チャプター削除エラー");
+    }
+  },
+);
+
 export default Chapter;
