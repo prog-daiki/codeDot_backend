@@ -293,4 +293,37 @@ Chapter.delete(
   },
 );
 
+/**
+ * チャプター非公開API
+ * @route PUT /api/courses/{course_id}/chapters/{chapter_id}/unpublish
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 非公開したチャプター
+ * @throws CourseNotFoundError
+ * @throws ChapterNotFoundError
+ * @throws チャプター非公開エラー
+ */
+Chapter.put(
+  "/:chapter_id/unpublish",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ chapter_id: z.string(), course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
+    const chapterUseCase = c.get("chapterUseCase");
+    try {
+      const chapter = await chapterUseCase.unpublishChapter(courseId, chapterId);
+      return c.json(chapter);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      if (error instanceof ChapterNotFoundError) {
+        console.error(`存在しないチャプターです: ID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CHAPTER) }, 404);
+      }
+      return HandleError(c, error, "チャプター非公開エラー");
+    }
+  },
+);
+
 export default Chapter;
