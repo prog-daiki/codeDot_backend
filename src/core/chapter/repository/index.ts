@@ -1,9 +1,11 @@
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
-import { chapter } from "../../../../db/schema";
+import { chapter, muxData } from "../../../../db/schema";
 import type { Chapter } from "../types";
 import { getCurrentJstDate } from "../../../common/date";
 import { createId } from "@paralleldrive/cuid2";
+import type { MuxData } from "../../muxData/types";
+import type { ChapterWithMuxData } from "../types/ChapterWithMuxData";
 
 /**
  * チャプターのリポジトリを管理するクラス
@@ -52,8 +54,12 @@ export class ChapterRepository {
    * @param chapterId チャプターID
    * @returns チャプター
    */
-  async getChapterById(chapterId: string): Promise<Chapter> {
-    const [data] = await db.select().from(chapter).where(eq(chapter.id, chapterId));
+  async getChapterById(chapterId: string): Promise<ChapterWithMuxData> {
+    const [data] = await db
+      .select()
+      .from(chapter)
+      .leftJoin(muxData, eq(chapter.id, muxData.chapterId))
+      .where(eq(chapter.id, chapterId));
     return data;
   }
 
@@ -97,6 +103,15 @@ export class ChapterRepository {
       .set({ ...updateData, updateDate: currentJstDate })
       .where(eq(chapter.id, chapterId))
       .returning();
+    return data;
+  }
+
+  /**
+   * チャプターを削除する
+   * @param chapterId チャプターID
+   */
+  async deleteChapter(chapterId: string) {
+    const [data] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
     return data;
   }
 }
