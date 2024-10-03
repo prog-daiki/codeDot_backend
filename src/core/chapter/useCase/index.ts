@@ -89,4 +89,31 @@ export class ChapterUseCase {
 
     return await this.chapterRepository.updateChapter(chapterId, { title });
   }
+
+  /**
+   * チャプターの詳細を更新する
+   * @param courseId 講座ID
+   * @param chapterId チャプターID
+   * @param description チャプター詳細
+   * @returns 更新したチャプター
+   */
+  async updateChapterDescription(
+    courseId: string,
+    chapterId: string,
+    description: string,
+  ): Promise<Chapter> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    // チャプターの存在チェック
+    const isChapterExists = await this.chapterRepository.isChapterExists(chapterId);
+    if (!isChapterExists) {
+      throw new ChapterNotFoundError();
+    }
+
+    return await this.chapterRepository.updateChapter(chapterId, { description });
+  }
 }
