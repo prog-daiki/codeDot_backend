@@ -8,6 +8,8 @@ import { CourseNotFoundError } from "../../error/CourseNotFoundError";
 import { Entity, Messages } from "../../common/message";
 import { ChapterNotFoundError } from "../../error/ChapterNotFoundError";
 import { insertChapterSchema } from "../../../db/schema";
+import { MuxDataNotFoundError } from "../../error/MuxDataNotFoundError";
+import { ChapterRequiredFieldsEmptyError } from "../../error/ChapterRequiredFieldsEmptyError";
 
 const Chapter = new Hono<{
   Variables: {
@@ -322,6 +324,49 @@ Chapter.put(
         return c.json({ error: Messages.MSG_ERR_003(Entity.CHAPTER) }, 404);
       }
       return HandleError(c, error, "チャプター非公開エラー");
+    }
+  },
+);
+
+/**
+ * チャプター公開API
+ * @route PUT /api/courses/{course_id}/chapters/{chapter_id}/publish
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 公開したチャプター
+ * @throws CourseNotFoundError
+ * @throws ChapterNotFoundError
+ * @throws MuxDataNotFoundError
+ * @throws ChapterRequiredFieldsEmptyError
+ * @throws チャプター公開エラー
+ */
+Chapter.put(
+  "/:chapter_id/publish",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ chapter_id: z.string(), course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
+    const chapterUseCase = c.get("chapterUseCase");
+    try {
+      const chapter = await chapterUseCase.publishChapter(courseId, chapterId);
+      return c.json(chapter);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      if (error instanceof ChapterNotFoundError) {
+        console.error(`存在しないチャプターです: ID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.CHAPTER) }, 404);
+      }
+      if (error instanceof MuxDataNotFoundError) {
+        console.error(`Muxデータが存在しません: チャプターID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.MUXDATA) }, 404);
+      }
+      if (error instanceof ChapterRequiredFieldsEmptyError) {
+        console.error(`チャプターの必須フィールドが空です: チャプターID ${chapterId}`);
+        return c.json({ error: Messages.MSG_ERR_004 }, 400);
+      }
+      return HandleError(c, error, "チャプター公開エラー");
     }
   },
 );
