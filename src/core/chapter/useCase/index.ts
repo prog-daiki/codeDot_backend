@@ -7,6 +7,7 @@ import type { Chapter } from "../types";
 import { MuxDataRepository } from "../../muxData/repository";
 import { MuxDataNotFoundError } from "../../../error/MuxDataNotFoundError";
 import { ChapterRequiredFieldsEmptyError } from "../../../error/ChapterRequiredFieldsEmptyError";
+import type { ChapterWithMuxData } from "../types/ChapterWithMuxData";
 
 /**
  * チャプターに関するユースケースを管理するクラス
@@ -42,7 +43,7 @@ export class ChapterUseCase {
    * @param chapterId チャプターID
    * @returns チャプター
    */
-  async getChapter(courseId: string, chapterId: string): Promise<Chapter> {
+  async getChapter(courseId: string, chapterId: string): Promise<ChapterWithMuxData> {
     // 講座の存在チェック
     const isCourseExists = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
@@ -289,8 +290,8 @@ export class ChapterUseCase {
     }
 
     // チャプターの必須フィールドが空かどうかを確認
-    const chapter = await this.chapterRepository.getChapterById(chapterId);
-    if (!chapter.title || !chapter.description || !chapter.videoUrl) {
+    const data = await this.chapterRepository.getChapterById(chapterId);
+    if (!data.chapter.title || !data.chapter.description || !data.chapter.videoUrl) {
       throw new ChapterRequiredFieldsEmptyError();
     }
 
