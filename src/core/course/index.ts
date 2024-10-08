@@ -40,6 +40,40 @@ Course.get("/", validateAdminMiddleware, async (c) => {
 });
 
 /**
+ * 公開講座一覧取得API
+ * @route GET /api/courses/publish
+ * @middleware validateAuthMiddleware - ユーザー権限の検証
+ * @returns 公開講座一覧
+ * @throws 公開講座一覧取得エラー
+ */
+Course.get(
+  "/publish",
+  validateAuthMiddleware,
+  zValidator(
+    "query",
+    z.object({
+      title: z.string().optional(),
+      categoryId: z.string().optional(),
+    }),
+  ),
+  async (c) => {
+    const courseUseCase = c.get("courseUseCase");
+    const validatedData = c.req.valid("query");
+    const auth = getAuth(c);
+    try {
+      const courses = await courseUseCase.getPublishCourses(
+        auth!.userId!,
+        validatedData.title,
+        validatedData.categoryId,
+      );
+      return c.json(courses);
+    } catch (error) {
+      return HandleError(c, error, "公開講座一覧取得エラー");
+    }
+  },
+);
+
+/**
  * 講座取得API
  * @route GET /api/courses/:course_id
  * @middleware validateAdminMiddleware - 管理者権限の検証
@@ -332,40 +366,6 @@ Course.put(
         return c.json({ error: Messages.MSG_ERR_004 }, 400);
       }
       return HandleError(c, error, "講座公開エラー");
-    }
-  },
-);
-
-/**
- * 公開講座一覧取得API
- * @route GET /api/courses/publish
- * @middleware validateAuthMiddleware - ユーザー権限の検証
- * @returns 公開講座一覧
- * @throws 公開講座一覧取得エラー
- */
-Course.get(
-  "/publish",
-  validateAuthMiddleware,
-  zValidator(
-    "query",
-    z.object({
-      title: z.string().optional(),
-      categoryId: z.string().optional(),
-    }),
-  ),
-  async (c) => {
-    const courseUseCase = c.get("courseUseCase");
-    const validatedData = c.req.valid("query");
-    const auth = getAuth(c);
-    try {
-      const courses = await courseUseCase.getPublishCourses(
-        auth!.userId!,
-        validatedData.title,
-        validatedData.categoryId,
-      );
-      return c.json(courses);
-    } catch (error) {
-      return HandleError(c, error, "公開講座一覧取得エラー");
     }
   },
 );
