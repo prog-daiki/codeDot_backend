@@ -96,9 +96,19 @@ export class CourseRepository {
         course,
         category,
         chapters: sql<(typeof chapter.$inferSelect)[]>`
-        coalesce(json_agg(${chapter}) filter (where ${chapter.id} is not null), '[]')`.as(
-          "chapters",
-        ),
+        coalesce(json_agg(
+          json_build_object(
+            'id', ${chapter.id},
+            'title', ${chapter.title},
+            'description', ${chapter.description},
+            'videoUrl', ${chapter.videoUrl},
+            'position', ${chapter.position},
+            'publishFlag', ${chapter.publishFlag},
+            'courseId', ${chapter.courseId},
+            'createDate', ${chapter.createDate},
+            'updateDate', ${chapter.updateDate}
+          ) order by ${chapter.position}
+        ) filter (where ${chapter.id} is not null), '[]')`.as("chapters"),
         purchased: sql<boolean>`case when ${purchase.id} is not null then true else false end`.as(
           "purchased",
         ),
