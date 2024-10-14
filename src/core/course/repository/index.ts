@@ -1,21 +1,48 @@
 import { and, desc, eq, ilike, sql } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
-import { category, chapter, course, purchase } from "../../../../db/schema";
+import { category, chapter, course, muxData, purchase } from "../../../../db/schema";
 import type { Course } from "../types";
 import { createId } from "@paralleldrive/cuid2";
 import { getCurrentJstDate } from "../../../common/date";
 import type { PublishCourse } from "../types/publish-course";
+import type { AdminCourse } from "../types/admin-course";
+import type { PublishCourseWithMuxData } from "../types/publish-course-with-muxData";
 
 /**
  * 講座のリポジトリを管理するクラス
  */
 export class CourseRepository {
   /**
-   * 全ての講座を作成日の降順で取得する
-   * @returns {Promise<Course[]>} 講座一覧
+   * 全ての講座を取得する
+   * @returns {Promise<AdminCourse[]>} 講座一覧
    */
-  async getAllCoursesSortedByCreateDate(): Promise<Course[]> {
-    const data = await db.select().from(course).orderBy(desc(course.createDate));
+  async getAllCourses(): Promise<AdminCourse[]> {
+    const data = await db
+      .select({
+        course,
+        category,
+        chapters: sql<(typeof chapter.$inferSelect)[]>`
+      coalesce(json_agg(
+        json_build_object(
+          'id', ${chapter.id},
+          'title', ${chapter.title},
+          'description', ${chapter.description},
+          'videoUrl', ${chapter.videoUrl},
+          'position', ${chapter.position},
+          'publishFlag', ${chapter.publishFlag},
+          'courseId', ${chapter.courseId},
+          'createDate', ${chapter.createDate},
+          'updateDate', ${chapter.updateDate}
+        ) order by ${chapter.position}
+      ) filter (where ${chapter.id} is not null), '[]')`.as("chapters"),
+        purchasedNumber: sql<number>`count(${purchase.id})`.as("purchasedNumber"),
+      })
+      .from(course)
+      .leftJoin(chapter, eq(course.id, chapter.courseId))
+      .leftJoin(category, eq(course.categoryId, category.id))
+      .leftJoin(purchase, eq(course.id, purchase.courseId))
+      .groupBy(course.id, category.id, purchase.id)
+      .orderBy(desc(course.createDate));
     return data;
   }
 
@@ -130,6 +157,70 @@ export class CourseRepository {
       )
       .groupBy(course.id, category.id, purchase.id)
       .orderBy(desc(course.createDate));
+    return data;
+  }
+
+  /**
+   * 公開講座を取得する
+   * @param courseId
+   * @returns
+   */
+  async getPublishCourse(courseId: string, userId?: string): Promise<PublishCourseWithMuxData> {
+    const [data] = await db
+      .select({
+        course,
+        category,
+        chapters: sql<
+          (typeof chapter.$inferSelect & { muxData: typeof muxData.$inferSelect | null })[]
+        >`json_agg(
+            json_build_object(
+              'id', ${chapter.id},
+              'title', ${chapter.title},
+              'description', ${chapter.description},
+              'videoUrl', ${chapter.videoUrl},
+              'position', ${chapter.position},
+              'publishFlag', ${chapter.publishFlag},
+              'courseId', ${chapter.courseId},
+              'createDate', ${chapter.createDate},
+              'updateDate', ${chapter.updateDate},
+              'muxData', case when ${muxData.id} is not null then
+                json_build_object(
+                  'id', ${muxData.id},
+                  'assetId', ${muxData.assetId},
+                  'playbackId', ${muxData.playbackId},
+                  'chapterId', ${muxData.chapterId}
+                )
+              else null end
+            )
+            ORDER BY ${chapter.position} ASC
+          ) filter (where ${chapter.id} is not null)
+        `.as("chapters"),
+        purchased: sql<boolean>`case when ${purchase.id} is not null then true else false end`.as(
+          "purchased",
+        ),
+      })
+      .from(course)
+      .leftJoin(chapter, eq(course.id, chapter.courseId))
+      .leftJoin(category, eq(course.categoryId, category.id))
+      .leftJoin(muxData, eq(chapter.id, muxData.chapterId))
+      .leftJoin(
+        purchase,
+        and(eq(course.id, purchase.courseId), userId ? eq(purchase.userId, userId) : undefined),
+      )
+      .where(
+        and(eq(course.id, courseId), eq(course.publishFlag, true), eq(chapter.publishFlag, true)),
+      )
+      .groupBy(course.id, category.id, purchase.id);
+    return data;
+  }
+
+  /**
+   * 講座を物理削除する
+   * @param courseId
+   * @returns
+   */
+  async deleteCourse(courseId: string) {
+    const [data] = await db.delete(course).where(eq(course.id, courseId)).returning();
     return data;
   }
 }
