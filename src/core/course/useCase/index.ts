@@ -167,7 +167,7 @@ export class CourseUseCase {
    */
   async unpublishCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }

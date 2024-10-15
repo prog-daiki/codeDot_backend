@@ -356,7 +356,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.unpublishCourse(courseId);
+      const course: Course = await courseUseCase.unpublishCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
