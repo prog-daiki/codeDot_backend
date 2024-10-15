@@ -12,6 +12,7 @@ import { CourseRequiredFieldsEmptyError } from "../../error/CourseRequiredFields
 import { getAuth } from "@hono/clerk-auth";
 import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
 import type { AdminCourse } from "./types/admin-course";
+import type { Course } from "./types";
 
 const Course = new Hono<{
   Variables: {
@@ -90,7 +91,7 @@ Course.get(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.getCourse(courseId);
+      const course: Course = await courseUseCase.getCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {

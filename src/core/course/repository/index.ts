@@ -52,7 +52,7 @@ export class CourseRepository {
    * @returns {Promise<Course | null>} 講座
    */
   async getCourseById(courseId: string): Promise<Course> {
-    const [data] = await db.select().from(course).where(eq(course.id, courseId));
+    const [data]: Course[] = await db.select().from(course).where(eq(course.id, courseId));
     return data;
   }
 
