@@ -36,7 +36,7 @@ export class CategoryUseCase {
    */
   async updateCategoryName(categoryId: string, name: string): Promise<Category> {
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }
@@ -51,7 +51,7 @@ export class CategoryUseCase {
    */
   async deleteCategory(categoryId: string): Promise<Category> {
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }
