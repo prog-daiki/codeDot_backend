@@ -40,10 +40,10 @@ export class CategoryRepository {
   /**
    * カテゴリーを登録する
    * @param name カテゴリーの名前
-   * @returns {Promise<Category>} 登録したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 登録したカテゴリー
    */
   async registerCategory(name: string): Promise<Category> {
-    const [data] = await db
+    const [data]: Category[] = await db
       .insert(category)
       .values({
         id: createId(),
