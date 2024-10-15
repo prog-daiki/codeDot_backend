@@ -281,7 +281,7 @@ Chapter.delete(
     const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.deleteChapter(courseId, chapterId);
+      const chapter: Chapter= await chapterUseCase.deleteChapter(courseId, chapterId);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
