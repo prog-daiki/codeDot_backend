@@ -416,7 +416,7 @@ Course.delete(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.deleteCourse(courseId);
+      const course: Course = await courseUseCase.deleteCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
