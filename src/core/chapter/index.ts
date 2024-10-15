@@ -209,7 +209,7 @@ Chapter.put(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.updateChapterVideo(
+      const chapter: Chapter = await chapterUseCase.updateChapterVideo(
         courseId,
         chapterId,
         validatedData.videoUrl,
