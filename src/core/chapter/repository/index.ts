@@ -44,7 +44,7 @@ export class ChapterRepository {
    * @returns {Promise<boolean>} チャプターが存在する場合はtrue、そうでない場合はfalse
    */
   async isChapterExists(chapterId: string): Promise<boolean> {
-    const chapter = await this.getChapterById(chapterId);
+    const chapter: ChapterWithMuxData | null = await this.getChapterById(chapterId);
     return !!chapter;
   }
 
@@ -54,7 +54,7 @@ export class ChapterRepository {
    * @returns チャプター
    */
   async getChapterById(chapterId: string): Promise<ChapterWithMuxData> {
-    const [data] = await db
+    const [data]: ChapterWithMuxData[] = await db
       .select()
       .from(chapter)
       .leftJoin(muxData, eq(chapter.id, muxData.chapterId))
