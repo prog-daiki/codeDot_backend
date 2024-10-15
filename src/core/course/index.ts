@@ -14,6 +14,7 @@ import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
 import type { AdminCourse } from "./types/admin-course";
 import type { Course } from "./types";
 import type { PublishCourse } from "./types/publish-course";
+import type { PublishCourseWithMuxData } from "./types/publish-course-with-muxData";
 
 const Course = new Hono<{
   Variables: {
@@ -121,10 +122,14 @@ Course.get(
     const courseUseCase = c.get("courseUseCase");
     const auth = getAuth(c);
     try {
-      const course = await courseUseCase.getPublishCourse(courseId, auth!.userId!);
+      const course: PublishCourseWithMuxData = await courseUseCase.getPublishCourse(
+        courseId,
+        auth!.userId!,
+      );
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "公開講座取得エラー");
