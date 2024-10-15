@@ -57,13 +57,13 @@ export class CategoryRepository {
    * カテゴリーを更新する
    * @param categoryId カテゴリーID
    * @param updateData 更新するデータ
-   * @returns {Promise<Category>} 更新したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 更新したカテゴリー
    */
   async updateCategory(
     categoryId: string,
     updateData: Partial<Omit<typeof category.$inferInsert, "id">>,
   ): Promise<Category> {
-    const [data] = await db
+    const [data]: Category[] = await db
       .update(category)
       .set({ ...updateData })
       .where(eq(category.id, categoryId))
