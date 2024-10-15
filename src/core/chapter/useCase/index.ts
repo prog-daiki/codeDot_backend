@@ -200,32 +200,32 @@ export class ChapterUseCase {
    */
   async deleteChapter(courseId: string, chapterId: string) {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // チャプターの存在チェック
-    const isChapterExists = await this.chapterRepository.isChapterExists(chapterId);
+    const isChapterExists: boolean = await this.chapterRepository.isChapterExists(chapterId);
     if (!isChapterExists) {
       throw new ChapterNotFoundError();
     }
 
-    const { video } = new Mux({
+    const { video }: Mux = new Mux({
       tokenId: process.env.MUX_TOKEN_ID!,
       tokenSecret: process.env.MUX_TOKEN_SECRET!,
     });
 
     // MuxDataの存在チェック
-    const existsMuxData = await this.muxDataRepository.checkMuxDataExists(chapterId);
+    const existsMuxData: MuxData | null = await this.muxDataRepository.checkMuxDataExists(chapterId);
     if (existsMuxData) {
       await video.assets.delete(existsMuxData.assetId);
       await this.muxDataRepository.deleteMuxData(chapterId);
     }
-    const chapter = await this.chapterRepository.deleteChapter(chapterId);
+    const chapter: Chapter = await this.chapterRepository.deleteChapter(chapterId);
 
     // 講座のチャプターが0件になった場合、講座を非公開にする
-    const chapters = await this.chapterRepository.getPublishChapters(courseId);
+    const chapters: Chapter[] = await this.chapterRepository.getPublishChapters(courseId);
     if (chapters.length === 0) {
       await this.courseRepository.updateCourse(courseId, {
         publishFlag: false,

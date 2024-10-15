@@ -110,7 +110,7 @@ export class ChapterRepository {
    * @param chapterId チャプターID
    */
   async deleteChapter(chapterId: string) {
-    const [data] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
+    const [data]: Chapter[] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
     return data;
   }
 }
