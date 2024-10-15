@@ -11,6 +11,7 @@ import type { PublishCourse } from "../types/publish-course";
 import { MuxDataRepository } from "../../muxData/repository";
 import type { Chapter } from "../../chapter/types";
 import type { MuxData } from "../../muxData/types";
+import type { PublishCourseWithMuxData } from "../types/publish-course-with-muxData";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -258,14 +259,13 @@ export class CourseUseCase {
    * @param courseId 講座ID
    * @returns 公開講座
    */
-  async getPublishCourse(courseId: string, userId?: string) {
+  async getPublishCourse(courseId: string, userId?: string): Promise<PublishCourseWithMuxData> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
-    const course = await this.courseRepository.getPublishCourse(courseId, userId);
-    return course;
+    return await this.courseRepository.getPublishCourse(courseId, userId);
   }
 }

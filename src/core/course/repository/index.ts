@@ -166,7 +166,7 @@ export class CourseRepository {
    * @returns
    */
   async getPublishCourse(courseId: string, userId?: string): Promise<PublishCourseWithMuxData> {
-    const [data] = await db
+    const [data]: PublishCourseWithMuxData[] = await db
       .select({
         course,
         category,
