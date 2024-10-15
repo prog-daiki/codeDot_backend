@@ -4,7 +4,6 @@ import { chapter, muxData } from "../../../../db/schema";
 import type { Chapter } from "../types";
 import { getCurrentJstDate } from "../../../common/date";
 import { createId } from "@paralleldrive/cuid2";
-import type { MuxData } from "../../muxData/types";
 import type { ChapterWithMuxData } from "../types/ChapterWithMuxData";
 
 /**
@@ -17,7 +16,7 @@ export class ChapterRepository {
    * @returns チャプター一覧
    */
   async getChapters(courseId: string): Promise<Chapter[]> {
-    const data = await db
+    const data: Chapter[] = await db
       .select()
       .from(chapter)
       .where(eq(chapter.courseId, courseId))
@@ -30,7 +29,7 @@ export class ChapterRepository {
    * @param courseId
    * @returns
    */
-  async getPublishChapters(courseId: string) {
+  async getPublishChapters(courseId: string): Promise<Chapter[]> {
     const chapters = await db
       .select()
       .from(chapter)
@@ -45,7 +44,7 @@ export class ChapterRepository {
    * @returns {Promise<boolean>} チャプターが存在する場合はtrue、そうでない場合はfalse
    */
   async isChapterExists(chapterId: string): Promise<boolean> {
-    const chapter = await this.getChapterById(chapterId);
+    const chapter: ChapterWithMuxData | null = await this.getChapterById(chapterId);
     return !!chapter;
   }
 
@@ -55,7 +54,7 @@ export class ChapterRepository {
    * @returns チャプター
    */
   async getChapterById(chapterId: string): Promise<ChapterWithMuxData> {
-    const [data] = await db
+    const [data]: ChapterWithMuxData[] = await db
       .select()
       .from(chapter)
       .leftJoin(muxData, eq(chapter.id, muxData.chapterId))
@@ -70,10 +69,10 @@ export class ChapterRepository {
    * @returns チャプター
    */
   async registerChapter(courseId: string, title: string): Promise<Chapter> {
-    const currentJstDate = getCurrentJstDate();
-    const chapters = await this.getChapters(courseId);
-    const newPosition = chapters.length > 0 ? chapters[chapters.length - 1].position + 1 : 1;
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const chapters: Chapter[] = await this.getChapters(courseId);
+    const newPosition: number = chapters.length > 0 ? chapters[chapters.length - 1].position + 1 : 1;
+    const [data]: Chapter[] = await db
       .insert(chapter)
       .values({
         id: createId(),
@@ -96,9 +95,9 @@ export class ChapterRepository {
   async updateChapter(
     chapterId: string,
     updateData: Partial<Omit<typeof chapter.$inferInsert, "id" | "createDate">>,
-  ) {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+  ): Promise<Chapter> {
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Chapter[] = await db
       .update(chapter)
       .set({ ...updateData, updateDate: currentJstDate })
       .where(eq(chapter.id, chapterId))
@@ -110,8 +109,8 @@ export class ChapterRepository {
    * チャプターを削除する
    * @param chapterId チャプターID
    */
-  async deleteChapter(chapterId: string) {
-    const [data] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
+  async deleteChapter(chapterId: string): Promise<Chapter> {
+    const [data]: Chapter[] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
     return data;
   }
 }

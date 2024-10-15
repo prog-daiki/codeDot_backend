@@ -10,6 +10,8 @@ import { ChapterNotFoundError } from "../../error/ChapterNotFoundError";
 import { insertChapterSchema } from "../../../db/schema";
 import { MuxDataNotFoundError } from "../../error/MuxDataNotFoundError";
 import { ChapterRequiredFieldsEmptyError } from "../../error/ChapterRequiredFieldsEmptyError";
+import type { Chapter } from "./types";
+import type { ChapterWithMuxData } from "./types/ChapterWithMuxData";
 
 const Chapter = new Hono<{
   Variables: {
@@ -36,7 +38,7 @@ Chapter.get(
     const { course_id: courseId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapters = await chapterUseCase.getChapters(courseId);
+      const chapters: Chapter[] = await chapterUseCase.getChapters(courseId);
       return c.json(chapters);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -65,7 +67,7 @@ Chapter.get(
     const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.getChapter(courseId, chapterId);
+      const chapter: ChapterWithMuxData = await chapterUseCase.getChapter(courseId, chapterId);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -98,7 +100,7 @@ Chapter.post(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.registerChapter(courseId, validatedData.title);
+      const chapter: Chapter = await chapterUseCase.registerChapter(courseId, validatedData.title);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -129,7 +131,7 @@ Chapter.put(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.updateChapterTitle(
+      const chapter: Chapter = await chapterUseCase.updateChapterTitle(
         courseId,
         chapterId,
         validatedData.title,
@@ -168,7 +170,7 @@ Chapter.put(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.updateChapterDescription(
+      const chapter: Chapter = await chapterUseCase.updateChapterDescription(
         courseId,
         chapterId,
         validatedData.description,
@@ -207,7 +209,7 @@ Chapter.put(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.updateChapterVideo(
+      const chapter: Chapter = await chapterUseCase.updateChapterVideo(
         courseId,
         chapterId,
         validatedData.videoUrl,
@@ -279,7 +281,7 @@ Chapter.delete(
     const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.deleteChapter(courseId, chapterId);
+      const chapter: Chapter= await chapterUseCase.deleteChapter(courseId, chapterId);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -312,7 +314,7 @@ Chapter.put(
     const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.unpublishChapter(courseId, chapterId);
+      const chapter: Chapter = await chapterUseCase.unpublishChapter(courseId, chapterId);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -347,7 +349,7 @@ Chapter.put(
     const { course_id: courseId, chapter_id: chapterId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.publishChapter(courseId, chapterId);
+      const chapter: Chapter = await chapterUseCase.publishChapter(courseId, chapterId);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {

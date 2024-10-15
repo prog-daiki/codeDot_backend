@@ -11,6 +11,10 @@ import { CategoryNotFoundError } from "../../error/CategoryNotFoundError";
 import { CourseRequiredFieldsEmptyError } from "../../error/CourseRequiredFieldsEmptyError";
 import { getAuth } from "@hono/clerk-auth";
 import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
+import type { AdminCourse } from "./types/admin-course";
+import type { Course } from "./types";
+import type { PublishCourse } from "./types/publish-course";
+import type { PublishCourseWithMuxData } from "./types/publish-course-with-muxData";
 
 const Course = new Hono<{
   Variables: {
@@ -31,7 +35,7 @@ const Course = new Hono<{
 Course.get("/", validateAdminMiddleware, async (c) => {
   const courseUseCase = c.get("courseUseCase");
   try {
-    const courses = await courseUseCase.getCourses();
+    const courses: AdminCourse[] = await courseUseCase.getCourses();
     console.log(`講座一覧を取得しました: ${courses.length}件`);
     return c.json(courses);
   } catch (error) {
@@ -61,7 +65,7 @@ Course.get(
     const validatedData = c.req.valid("query");
     const auth = getAuth(c);
     try {
-      const courses = await courseUseCase.getPublishCourses(
+      const courses: PublishCourse[] = await courseUseCase.getPublishCourses(
         auth!.userId!,
         validatedData.title,
         validatedData.categoryId,
@@ -89,7 +93,7 @@ Course.get(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.getCourse(courseId);
+      const course: Course = await courseUseCase.getCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -118,10 +122,14 @@ Course.get(
     const courseUseCase = c.get("courseUseCase");
     const auth = getAuth(c);
     try {
-      const course = await courseUseCase.getPublishCourse(courseId, auth!.userId!);
+      const course: PublishCourseWithMuxData = await courseUseCase.getPublishCourse(
+        courseId,
+        auth!.userId!,
+      );
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "公開講座取得エラー");
@@ -144,7 +152,7 @@ Course.post(
     const validatedData = c.req.valid("json");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.registerCourse(validatedData.title);
+      const course: Course = await courseUseCase.registerCourse(validatedData.title);
       return c.json(course);
     } catch (error) {
       return HandleError(c, error, "講座登録エラー");
@@ -170,7 +178,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseTitle(courseId, validatedData.title);
+      const course: Course = await courseUseCase.updateCourseTitle(courseId, validatedData.title);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -200,7 +208,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseDescription(
+      const course: Course = await courseUseCase.updateCourseDescription(
         courseId,
         validatedData.description,
       );
@@ -233,7 +241,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseThumbnail(courseId, validatedData.imageUrl);
+      const course: Course = await courseUseCase.updateCourseThumbnail(courseId, validatedData.imageUrl);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -263,7 +271,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCoursePrice(courseId, validatedData.price);
+      const course: Course = await courseUseCase.updateCoursePrice(courseId, validatedData.price);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -293,7 +301,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseCategory(courseId, validatedData.categoryId);
+      const course: Course = await courseUseCase.updateCourseCategory(courseId, validatedData.categoryId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -326,7 +334,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseSourceUrl(courseId, validatedData.sourceUrl);
+      const course: Course = await courseUseCase.updateCourseSourceUrl(courseId, validatedData.sourceUrl);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -354,7 +362,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.unpublishCourse(courseId);
+      const course: Course = await courseUseCase.unpublishCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -383,7 +391,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.publishCourse(courseId);
+      const course: Course = await courseUseCase.publishCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -414,7 +422,7 @@ Course.delete(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.deleteCourse(courseId);
+      const course: Course = await courseUseCase.deleteCourse(courseId);
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {

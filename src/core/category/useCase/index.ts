@@ -12,7 +12,7 @@ export class CategoryUseCase {
   }
 
   /**
-   * カテゴリーを取得する
+   * カテゴリーを一覧取得する
    * @returns カテゴリー一覧
    */
   async getCategories(): Promise<Category[]> {
@@ -36,7 +36,7 @@ export class CategoryUseCase {
    */
   async updateCategoryName(categoryId: string, name: string): Promise<Category> {
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }
@@ -47,11 +47,11 @@ export class CategoryUseCase {
   /**
    * カテゴリーを削除する
    * @param categoryId カテゴリーID
-   * @returns 削除したカテゴリーのオブジェクト
+   * @returns 削除したカテゴリー
    */
   async deleteCategory(categoryId: string): Promise<Category> {
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }

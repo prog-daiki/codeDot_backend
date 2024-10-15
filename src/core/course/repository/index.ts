@@ -52,7 +52,7 @@ export class CourseRepository {
    * @returns {Promise<Course | null>} 講座
    */
   async getCourseById(courseId: string): Promise<Course> {
-    const [data] = await db.select().from(course).where(eq(course.id, courseId));
+    const [data]: Course[] = await db.select().from(course).where(eq(course.id, courseId));
     return data;
   }
 
@@ -72,8 +72,8 @@ export class CourseRepository {
    * @returns {Promise<Course>} 登録された講座オブジェクト
    */
   async registerCourse(title: string): Promise<Course> {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Course[] = await db
       .insert(course)
       .values({
         id: createId(),
@@ -95,8 +95,8 @@ export class CourseRepository {
     courseId: string,
     updateData: Partial<Omit<typeof course.$inferInsert, "id" | "createDate">>,
   ) {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Course[] = await db
       .update(course)
       .set({
         ...updateData,
@@ -118,7 +118,7 @@ export class CourseRepository {
     title?: string,
     categoryId?: string,
   ): Promise<PublishCourse[]> {
-    const data = await db
+    const data: PublishCourse[] = await db
       .select({
         course,
         category,
@@ -166,7 +166,7 @@ export class CourseRepository {
    * @returns
    */
   async getPublishCourse(courseId: string, userId?: string): Promise<PublishCourseWithMuxData> {
-    const [data] = await db
+    const [data]: PublishCourseWithMuxData[] = await db
       .select({
         course,
         category,
@@ -219,7 +219,7 @@ export class CourseRepository {
    * @param courseId
    * @returns
    */
-  async deleteCourse(courseId: string) {
+  async deleteCourse(courseId: string): Promise<Course> {
     const [data] = await db.delete(course).where(eq(course.id, courseId)).returning();
     return data;
   }

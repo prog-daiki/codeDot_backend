@@ -10,20 +10,20 @@ import { createId } from "@paralleldrive/cuid2";
 export class CategoryRepository {
   /**
    * 全てのカテゴリーをカテゴリー名の昇順で取得する
-   * @returns {Promise<Category[]>} カテゴリーの配列
+   * @returns {Promise<Category[]>} カテゴリー一覧
    */
   async getCategories(): Promise<Category[]> {
-    const data = await db.select().from(category).orderBy(asc(category.name));
+    const data: Category[] = await db.select().from(category).orderBy(asc(category.name));
     return data;
   }
 
   /**
    * カテゴリーをIDで取得する
    * @param id カテゴリーのID
-   * @returns {Promise<Category | null>} カテゴリーのオブジェクト
+   * @returns {Promise<Category | null>} カテゴリー
    */
   async getCategoryById(id: string): Promise<Category | null> {
-    const [data] = await db.select().from(category).where(eq(category.id, id));
+    const [data]: Category[] = await db.select().from(category).where(eq(category.id, id));
     return data;
   }
 
@@ -33,17 +33,17 @@ export class CategoryRepository {
    * @returns {Promise<boolean>} カテゴリーが存在するかどうか
    */
   async isCategoryExists(id: string): Promise<boolean> {
-    const category = await this.getCategoryById(id);
+    const category: Category | null = await this.getCategoryById(id);
     return !!category;
   }
 
   /**
    * カテゴリーを登録する
    * @param name カテゴリーの名前
-   * @returns {Promise<Category>} 登録したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 登録したカテゴリー
    */
   async registerCategory(name: string): Promise<Category> {
-    const [data] = await db
+    const [data]: Category[] = await db
       .insert(category)
       .values({
         id: createId(),
@@ -57,13 +57,13 @@ export class CategoryRepository {
    * カテゴリーを更新する
    * @param categoryId カテゴリーID
    * @param updateData 更新するデータ
-   * @returns {Promise<Category>} 更新したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 更新したカテゴリー
    */
   async updateCategory(
     categoryId: string,
     updateData: Partial<Omit<typeof category.$inferInsert, "id">>,
   ): Promise<Category> {
-    const [data] = await db
+    const [data]: Category[] = await db
       .update(category)
       .set({ ...updateData })
       .where(eq(category.id, categoryId))
@@ -74,10 +74,10 @@ export class CategoryRepository {
   /**
    * カテゴリーを削除する
    * @param categoryId カテゴリーID
-   * @returns {Promise<Category>} 削除したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 削除したカテゴリー
    */
   async deleteCategory(categoryId: string): Promise<Category> {
-    const [data] = await db.delete(category).where(eq(category.id, categoryId)).returning();
+    const [data]: Category[] = await db.delete(category).where(eq(category.id, categoryId)).returning();
     return data;
   }
 }

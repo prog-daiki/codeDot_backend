@@ -1,6 +1,5 @@
 /**
  * 現在の日本標準時（JST）の Date オブジェクトを返します。
- *
  * @returns {Date} 日本標準時の Date オブジェクト
  */
 export function getCurrentJstDate(): Date {

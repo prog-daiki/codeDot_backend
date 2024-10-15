@@ -9,6 +9,9 @@ import type { Course } from "../types";
 import type { AdminCourse } from "../types/admin-course";
 import type { PublishCourse } from "../types/publish-course";
 import { MuxDataRepository } from "../../muxData/repository";
+import type { Chapter } from "../../chapter/types";
+import type { MuxData } from "../../muxData/types";
+import type { PublishCourseWithMuxData } from "../types/publish-course-with-muxData";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -41,7 +44,7 @@ export class CourseUseCase {
    */
   async getCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const course = await this.courseRepository.getCourseById(courseId);
+    const course: Course = await this.courseRepository.getCourseById(courseId);
     if (!course) {
       throw new CourseNotFoundError();
     }
@@ -66,7 +69,7 @@ export class CourseUseCase {
    */
   async updateCourseTitle(courseId: string, title: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -82,7 +85,7 @@ export class CourseUseCase {
    */
   async updateCourseDescription(courseId: string, description: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -98,7 +101,7 @@ export class CourseUseCase {
    */
   async updateCourseThumbnail(courseId: string, imageUrl: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -114,7 +117,7 @@ export class CourseUseCase {
    */
   async updateCoursePrice(courseId: string, price: number): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -130,13 +133,13 @@ export class CourseUseCase {
    */
   async updateCourseCategory(courseId: string, categoryId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }
@@ -152,7 +155,7 @@ export class CourseUseCase {
    */
   async updateCourseSourceUrl(courseId: string, sourceUrl: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -167,7 +170,7 @@ export class CourseUseCase {
    */
   async unpublishCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
@@ -182,14 +185,14 @@ export class CourseUseCase {
    */
   async publishCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // 講座と公開されているチャプターを取得する
-    const course = await this.courseRepository.getCourseById(courseId);
-    const publishChapters = await this.chapterRepository.getPublishChapters(courseId);
+    const course: Course = await this.courseRepository.getCourseById(courseId);
+    const publishChapters: Chapter[] = await this.chapterRepository.getPublishChapters(courseId);
 
     // 講座の必須項目を満たしているかチェック
     if (
@@ -203,7 +206,7 @@ export class CourseUseCase {
       throw new CourseRequiredFieldsEmptyError();
     }
 
-    const updatedCourse = await this.courseRepository.updateCourse(courseId, {
+    const updatedCourse: Course = await this.courseRepository.updateCourse(courseId, {
       publishFlag: true,
     });
     return updatedCourse;
@@ -224,22 +227,27 @@ export class CourseUseCase {
     return await this.courseRepository.getPublishCourses(userId, title, categoryId);
   }
 
+  /**
+   * 講座を削除する
+   * @param courseId 講座ID
+   * @returns 削除された講座
+   */
   async deleteCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // Muxの講座に関連するデータを削除する
-    const { video } = new Mux({
+    const { video }: Mux = new Mux({
       tokenId: process.env.MUX_TOKEN_ID!,
       tokenSecret: process.env.MUX_TOKEN_SECRET!,
     });
-    const muxDataList = await this.muxDataRepository.getMuxDataByCourseId(courseId);
+    const muxDataList: MuxData[] = await this.muxDataRepository.getMuxDataByCourseId(courseId);
     if (muxDataList.length > 0) {
       for (const muxData of muxDataList) {
-        await video.assets.delete(muxData.muxData.assetId);
+        await video.assets.delete(muxData.assetId);
       }
     }
 
@@ -251,14 +259,13 @@ export class CourseUseCase {
    * @param courseId 講座ID
    * @returns 公開講座
    */
-  async getPublishCourse(courseId: string, userId?: string) {
+  async getPublishCourse(courseId: string, userId?: string): Promise<PublishCourseWithMuxData> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
-    const course = await this.courseRepository.getPublishCourse(courseId, userId);
-    return course;
+    return await this.courseRepository.getPublishCourse(courseId, userId);
   }
 }
