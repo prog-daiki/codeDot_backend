@@ -95,8 +95,8 @@ export class CourseRepository {
     courseId: string,
     updateData: Partial<Omit<typeof course.$inferInsert, "id" | "createDate">>,
   ) {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Course[] = await db
       .update(course)
       .set({
         ...updateData,
