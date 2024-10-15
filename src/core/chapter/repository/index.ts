@@ -96,8 +96,8 @@ export class ChapterRepository {
     chapterId: string,
     updateData: Partial<Omit<typeof chapter.$inferInsert, "id" | "createDate">>,
   ) {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Chapter[] = await db
       .update(chapter)
       .set({ ...updateData, updateDate: currentJstDate })
       .where(eq(chapter.id, chapterId))

@@ -83,13 +83,13 @@ export class ChapterUseCase {
    */
   async updateChapterTitle(courseId: string, chapterId: string, title: string): Promise<Chapter> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // チャプターの存在チェック
-    const isChapterExists = await this.chapterRepository.isChapterExists(chapterId);
+    const isChapterExists: boolean = await this.chapterRepository.isChapterExists(chapterId);
     if (!isChapterExists) {
       throw new ChapterNotFoundError();
     }
