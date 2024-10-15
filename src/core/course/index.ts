@@ -202,7 +202,7 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.updateCourseDescription(
+      const course: Course = await courseUseCase.updateCourseDescription(
         courseId,
         validatedData.description,
       );
