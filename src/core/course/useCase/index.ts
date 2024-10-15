@@ -130,13 +130,13 @@ export class CourseUseCase {
    */
   async updateCourseCategory(courseId: string, categoryId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // カテゴリーの存在チェック
-    const isCategoryExists = await this.categoryRepository.isCategoryExists(categoryId);
+    const isCategoryExists: boolean = await this.categoryRepository.isCategoryExists(categoryId);
     if (!isCategoryExists) {
       throw new CategoryNotFoundError();
     }
