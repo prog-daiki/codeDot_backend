@@ -219,7 +219,7 @@ export class CourseRepository {
    * @param courseId
    * @returns
    */
-  async deleteCourse(courseId: string) {
+  async deleteCourse(courseId: string): Promise<Course> {
     const [data] = await db.delete(course).where(eq(course.id, courseId)).returning();
     return data;
   }

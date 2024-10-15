@@ -45,10 +45,13 @@ export class MuxDataRepository {
    * @param courseId
    * @returns
    */
-  async getMuxDataByCourseId(courseId: string) {
+  async getMuxDataByCourseId(courseId: string): Promise<MuxData[]> {
     const data = await db
       .select({
-        muxData,
+        id: muxData.id,
+        assetId: muxData.assetId,
+        playbackId: muxData.playbackId,
+        chapterId: muxData.chapterId,
       })
       .from(muxData)
       .innerJoin(chapter, eq(muxData.chapterId, chapter.id))
