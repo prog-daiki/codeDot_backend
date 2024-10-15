@@ -9,6 +9,7 @@ import type { Course } from "../types";
 import type { AdminCourse } from "../types/admin-course";
 import type { PublishCourse } from "../types/publish-course";
 import { MuxDataRepository } from "../../muxData/repository";
+import type { Chapter } from "../../chapter/types";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -182,14 +183,14 @@ export class CourseUseCase {
    */
   async publishCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    const isCourseExists: boolean = await this.courseRepository.isCourseExists(courseId);
     if (!isCourseExists) {
       throw new CourseNotFoundError();
     }
 
     // 講座と公開されているチャプターを取得する
-    const course = await this.courseRepository.getCourseById(courseId);
-    const publishChapters = await this.chapterRepository.getPublishChapters(courseId);
+    const course: Course = await this.courseRepository.getCourseById(courseId);
+    const publishChapters: Chapter[] = await this.chapterRepository.getPublishChapters(courseId);
 
     // 講座の必須項目を満たしているかチェック
     if (
@@ -203,7 +204,7 @@ export class CourseUseCase {
       throw new CourseRequiredFieldsEmptyError();
     }
 
-    const updatedCourse = await this.courseRepository.updateCourse(courseId, {
+    const updatedCourse: Course = await this.courseRepository.updateCourse(courseId, {
       publishFlag: true,
     });
     return updatedCourse;
