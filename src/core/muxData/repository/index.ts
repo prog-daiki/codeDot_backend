@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../../../db/drizzle";
-import { muxData } from "../../../../db/schema";
+import { chapter, muxData } from "../../../../db/schema";
 import type { MuxData } from "../types";
 import { createId } from "@paralleldrive/cuid2";
 
@@ -38,5 +38,21 @@ export class MuxDataRepository {
       assetId,
       playbackId,
     });
+  }
+
+  /**
+   * 講座IDからmuxDataを取得する
+   * @param courseId
+   * @returns
+   */
+  async getMuxDataByCourseId(courseId: string) {
+    const data = await db
+      .select({
+        muxData,
+      })
+      .from(muxData)
+      .innerJoin(chapter, eq(muxData.chapterId, chapter.id))
+      .where(eq(chapter.courseId, courseId));
+    return data;
   }
 }

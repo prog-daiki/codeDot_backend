@@ -1,3 +1,4 @@
+import Mux from "@mux/mux-node";
 import { CategoryNotFoundError } from "../../../error/CategoryNotFoundError";
 import { CourseNotFoundError } from "../../../error/CourseNotFoundError";
 import { CourseRequiredFieldsEmptyError } from "../../../error/CourseRequiredFieldsEmptyError";
@@ -5,7 +6,9 @@ import { CategoryRepository } from "../../category/repository";
 import { ChapterRepository } from "../../chapter/repository";
 import { CourseRepository } from "../repository";
 import type { Course } from "../types";
+import type { AdminCourse } from "../types/admin-course";
 import type { PublishCourse } from "../types/publish-course";
+import { MuxDataRepository } from "../../muxData/repository";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -14,19 +17,21 @@ export class CourseUseCase {
   private courseRepository: CourseRepository;
   private categoryRepository: CategoryRepository;
   private chapterRepository: ChapterRepository;
+  private muxDataRepository: MuxDataRepository;
 
   constructor() {
     this.courseRepository = new CourseRepository();
     this.categoryRepository = new CategoryRepository();
     this.chapterRepository = new ChapterRepository();
+    this.muxDataRepository = new MuxDataRepository();
   }
 
   /**
    * 講座一覧を取得する
    * @returns 講座一覧
    */
-  async getCourses(): Promise<Course[]> {
-    return await this.courseRepository.getAllCoursesSortedByCreateDate();
+  async getCourses(): Promise<AdminCourse[]> {
+    return await this.courseRepository.getAllCourses();
   }
 
   /**
@@ -217,5 +222,43 @@ export class CourseUseCase {
     categoryId?: string,
   ): Promise<PublishCourse[]> {
     return await this.courseRepository.getPublishCourses(userId, title, categoryId);
+  }
+
+  async deleteCourse(courseId: string): Promise<Course> {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    // Muxの講座に関連するデータを削除する
+    const { video } = new Mux({
+      tokenId: process.env.MUX_TOKEN_ID!,
+      tokenSecret: process.env.MUX_TOKEN_SECRET!,
+    });
+    const muxDataList = await this.muxDataRepository.getMuxDataByCourseId(courseId);
+    if (muxDataList.length > 0) {
+      for (const muxData of muxDataList) {
+        await video.assets.delete(muxData.muxData.assetId);
+      }
+    }
+
+    return await this.courseRepository.deleteCourse(courseId);
+  }
+
+  /**
+   * 公開講座を取得する
+   * @param courseId 講座ID
+   * @returns 公開講座
+   */
+  async getPublishCourse(courseId: string, userId?: string) {
+    // 講座の存在チェック
+    const isCourseExists = await this.courseRepository.isCourseExists(courseId);
+    if (!isCourseExists) {
+      throw new CourseNotFoundError();
+    }
+
+    const course = await this.courseRepository.getPublishCourse(courseId, userId);
+    return course;
   }
 }

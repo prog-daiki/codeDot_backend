@@ -102,6 +102,34 @@ Course.get(
 );
 
 /**
+ * 公開講座取得API
+ * @route GET /api/courses/:course_id
+ * @middleware validateAuthMiddleware - ユーザー権限の検証
+ * @returns 公開講座
+ * @throws CourseNotFoundError
+ * @throws 公開講座取得エラー
+ */
+Course.get(
+  "/:course_id/publish",
+  validateAuthMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    const auth = getAuth(c);
+    try {
+      const course = await courseUseCase.getPublishCourse(courseId, auth!.userId!);
+      return c.json(course);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      }
+      return HandleError(c, error, "公開講座取得エラー");
+    }
+  },
+);
+
+/**
  * 講座登録API
  * @route POST /api/courses
  * @middleware validateAdminMiddleware - 管理者権限の検証
@@ -364,6 +392,34 @@ Course.put(
       }
       if (error instanceof CourseRequiredFieldsEmptyError) {
         return c.json({ error: Messages.MSG_ERR_004 }, 400);
+      }
+      return HandleError(c, error, "講座公開エラー");
+    }
+  },
+);
+
+/**
+ * 講座削除API
+ * @route DELETE /api/courses/:course_id
+ * @middleware validateAdminMiddleware - 管理者権限の検証
+ * @returns 削除した講座
+ * @throws CourseNotFoundError
+ * @throws 講座削除エラー
+ */
+Course.delete(
+  "/:course_id",
+  validateAdminMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const course = await courseUseCase.deleteCourse(courseId);
+      return c.json(course);
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        console.error(`存在しない講座です: ID ${courseId}`);
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座公開エラー");
     }
