@@ -23,7 +23,6 @@ const Category = new Hono<{
  * @route GET /api/categories
  * @middleware validateAuthMiddleware - 認証されたユーザーか検証
  * @returns カテゴリーのJSONレスポンス
- * @throws CategoryNotFoundError
  * @throws カテゴリー一覧取得エラー
  */
 Category.get("/", validateAuthMiddleware, async (c) => {
