@@ -131,7 +131,7 @@ Chapter.put(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.updateChapterTitle(
+      const chapter: Chapter = await chapterUseCase.updateChapterTitle(
         courseId,
         chapterId,
         validatedData.title,
