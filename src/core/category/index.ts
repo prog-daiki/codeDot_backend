@@ -21,7 +21,7 @@ const Category = new Hono<{
 /**
  * カテゴリー一覧取得API
  * @route GET /api/categories
- * @middleware validateAuthMiddleware - 認証されたユーザーか検証
+ * @middleware validateAuthMiddleware - 認証ユーザーの検証
  * @returns カテゴリー一覧
  * @throws カテゴリー一覧取得エラー
  */
@@ -61,7 +61,7 @@ Category.post(
 /**
  * カテゴリー編集API
  * @route PUT /api/categories/:category_id
- * @middleware validateAdminMiddleware - 管理者のみアクセス可能
+ * @middleware validateAdminMiddleware - 管理者権限の検証
  * @returns 更新したカテゴリー
  * @throws CategoryNotFoundError
  * @throws カテゴリー編集エラー
@@ -91,7 +91,7 @@ Category.put(
 /**
  * カテゴリー削除API
  * @route DELETE /api/categories/:category_id
- * @middleware validateAdminMiddleware - 管理者のみアクセス可能
+ * @middleware validateAdminMiddleware - 管理者権限の検証
  * @returns 削除したカテゴリー
  * @throws CategoryNotFoundError
  * @throws カテゴリー削除エラー

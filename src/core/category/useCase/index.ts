@@ -47,7 +47,7 @@ export class CategoryUseCase {
   /**
    * カテゴリーを削除する
    * @param categoryId カテゴリーID
-   * @returns 削除したカテゴリーのオブジェクト
+   * @returns 削除したカテゴリー
    */
   async deleteCategory(categoryId: string): Promise<Category> {
     // カテゴリーの存在チェック
