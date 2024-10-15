@@ -12,7 +12,7 @@ export class CategoryUseCase {
   }
 
   /**
-   * カテゴリーを取得する
+   * カテゴリーを一覧取得する
    * @returns カテゴリー一覧
    */
   async getCategories(): Promise<Category[]> {

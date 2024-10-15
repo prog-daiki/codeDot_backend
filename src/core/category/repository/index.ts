@@ -13,7 +13,7 @@ export class CategoryRepository {
    * @returns {Promise<Category[]>} カテゴリーの配列
    */
   async getCategories(): Promise<Category[]> {
-    const data = await db.select().from(category).orderBy(asc(category.name));
+    const data: Category[] = await db.select().from(category).orderBy(asc(category.name));
     return data;
   }
 
