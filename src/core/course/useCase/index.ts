@@ -41,7 +41,7 @@ export class CourseUseCase {
    */
   async getCourse(courseId: string): Promise<Course> {
     // 講座の存在チェック
-    const course = await this.courseRepository.getCourseById(courseId);
+    const course: Course = await this.courseRepository.getCourseById(courseId);
     if (!course) {
       throw new CourseNotFoundError();
     }
