@@ -118,7 +118,7 @@ export class CourseRepository {
     title?: string,
     categoryId?: string,
   ): Promise<PublishCourse[]> {
-    const data = await db
+    const data: PublishCourse[] = await db
       .select({
         course,
         category,

@@ -13,6 +13,7 @@ import { getAuth } from "@hono/clerk-auth";
 import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
 import type { AdminCourse } from "./types/admin-course";
 import type { Course } from "./types";
+import type { PublishCourse } from "./types/publish-course";
 
 const Course = new Hono<{
   Variables: {
@@ -63,7 +64,7 @@ Course.get(
     const validatedData = c.req.valid("query");
     const auth = getAuth(c);
     try {
-      const courses = await courseUseCase.getPublishCourses(
+      const courses: PublishCourse[] = await courseUseCase.getPublishCourses(
         auth!.userId!,
         validatedData.title,
         validatedData.categoryId,
