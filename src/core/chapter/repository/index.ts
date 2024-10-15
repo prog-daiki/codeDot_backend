@@ -69,10 +69,10 @@ export class ChapterRepository {
    * @returns チャプター
    */
   async registerChapter(courseId: string, title: string): Promise<Chapter> {
-    const currentJstDate = getCurrentJstDate();
-    const chapters = await this.getChapters(courseId);
-    const newPosition = chapters.length > 0 ? chapters[chapters.length - 1].position + 1 : 1;
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const chapters: Chapter[] = await this.getChapters(courseId);
+    const newPosition: number = chapters.length > 0 ? chapters[chapters.length - 1].position + 1 : 1;
+    const [data]: Chapter[] = await db
       .insert(chapter)
       .values({
         id: createId(),

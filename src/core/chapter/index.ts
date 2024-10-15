@@ -100,7 +100,7 @@ Chapter.post(
     const validatedData = c.req.valid("json");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapter = await chapterUseCase.registerChapter(courseId, validatedData.title);
+      const chapter: Chapter = await chapterUseCase.registerChapter(courseId, validatedData.title);
       return c.json(chapter);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
