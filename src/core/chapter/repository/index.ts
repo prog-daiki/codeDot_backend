@@ -4,7 +4,6 @@ import { chapter, muxData } from "../../../../db/schema";
 import type { Chapter } from "../types";
 import { getCurrentJstDate } from "../../../common/date";
 import { createId } from "@paralleldrive/cuid2";
-import type { MuxData } from "../../muxData/types";
 import type { ChapterWithMuxData } from "../types/ChapterWithMuxData";
 
 /**
@@ -17,7 +16,7 @@ export class ChapterRepository {
    * @returns チャプター一覧
    */
   async getChapters(courseId: string): Promise<Chapter[]> {
-    const data = await db
+    const data: Chapter[] = await db
       .select()
       .from(chapter)
       .where(eq(chapter.courseId, courseId))

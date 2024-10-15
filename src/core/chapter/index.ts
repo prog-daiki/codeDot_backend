@@ -10,6 +10,7 @@ import { ChapterNotFoundError } from "../../error/ChapterNotFoundError";
 import { insertChapterSchema } from "../../../db/schema";
 import { MuxDataNotFoundError } from "../../error/MuxDataNotFoundError";
 import { ChapterRequiredFieldsEmptyError } from "../../error/ChapterRequiredFieldsEmptyError";
+import type { Chapter } from "./types";
 
 const Chapter = new Hono<{
   Variables: {
@@ -36,7 +37,7 @@ Chapter.get(
     const { course_id: courseId } = c.req.valid("param");
     const chapterUseCase = c.get("chapterUseCase");
     try {
-      const chapters = await chapterUseCase.getChapters(courseId);
+      const chapters: Chapter[] = await chapterUseCase.getChapters(courseId);
       return c.json(chapters);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
