@@ -146,7 +146,7 @@ Course.post(
     const validatedData = c.req.valid("json");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course = await courseUseCase.registerCourse(validatedData.title);
+      const course: Course = await courseUseCase.registerCourse(validatedData.title);
       return c.json(course);
     } catch (error) {
       return HandleError(c, error, "講座登録エラー");

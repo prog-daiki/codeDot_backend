@@ -72,8 +72,8 @@ export class CourseRepository {
    * @returns {Promise<Course>} 登録された講座オブジェクト
    */
   async registerCourse(title: string): Promise<Course> {
-    const currentJstDate = getCurrentJstDate();
-    const [data] = await db
+    const currentJstDate: Date = getCurrentJstDate();
+    const [data]: Course[] = await db
       .insert(course)
       .values({
         id: createId(),
