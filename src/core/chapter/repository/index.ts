@@ -29,7 +29,7 @@ export class ChapterRepository {
    * @param courseId
    * @returns
    */
-  async getPublishChapters(courseId: string) {
+  async getPublishChapters(courseId: string): Promise<Chapter[]> {
     const chapters = await db
       .select()
       .from(chapter)
@@ -95,7 +95,7 @@ export class ChapterRepository {
   async updateChapter(
     chapterId: string,
     updateData: Partial<Omit<typeof chapter.$inferInsert, "id" | "createDate">>,
-  ) {
+  ): Promise<Chapter> {
     const currentJstDate: Date = getCurrentJstDate();
     const [data]: Chapter[] = await db
       .update(chapter)
@@ -109,7 +109,7 @@ export class ChapterRepository {
    * チャプターを削除する
    * @param chapterId チャプターID
    */
-  async deleteChapter(chapterId: string) {
+  async deleteChapter(chapterId: string): Promise<Chapter> {
     const [data]: Chapter[] = await db.delete(chapter).where(eq(chapter.id, chapterId)).returning();
     return data;
   }
