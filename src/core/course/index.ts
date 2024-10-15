@@ -11,6 +11,7 @@ import { CategoryNotFoundError } from "../../error/CategoryNotFoundError";
 import { CourseRequiredFieldsEmptyError } from "../../error/CourseRequiredFieldsEmptyError";
 import { getAuth } from "@hono/clerk-auth";
 import { validateAuthMiddleware } from "../../auth/validateAuthMiddelware";
+import type { AdminCourse } from "./types/admin-course";
 
 const Course = new Hono<{
   Variables: {
@@ -31,7 +32,7 @@ const Course = new Hono<{
 Course.get("/", validateAdminMiddleware, async (c) => {
   const courseUseCase = c.get("courseUseCase");
   try {
-    const courses = await courseUseCase.getCourses();
+    const courses: AdminCourse[] = await courseUseCase.getCourses();
     console.log(`講座一覧を取得しました: ${courses.length}件`);
     return c.json(courses);
   } catch (error) {
