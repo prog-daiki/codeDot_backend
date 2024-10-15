@@ -10,7 +10,7 @@ import { createId } from "@paralleldrive/cuid2";
 export class CategoryRepository {
   /**
    * 全てのカテゴリーをカテゴリー名の昇順で取得する
-   * @returns {Promise<Category[]>} カテゴリーの配列
+   * @returns {Promise<Category[]>} カテゴリー一覧
    */
   async getCategories(): Promise<Category[]> {
     const data: Category[] = await db.select().from(category).orderBy(asc(category.name));
