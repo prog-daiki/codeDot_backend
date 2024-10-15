@@ -20,10 +20,10 @@ export class CategoryRepository {
   /**
    * カテゴリーをIDで取得する
    * @param id カテゴリーのID
-   * @returns {Promise<Category | null>} カテゴリーのオブジェクト
+   * @returns {Promise<Category | null>} カテゴリー
    */
   async getCategoryById(id: string): Promise<Category | null> {
-    const [data] = await db.select().from(category).where(eq(category.id, id));
+    const [data]: Category[] = await db.select().from(category).where(eq(category.id, id));
     return data;
   }
 
@@ -33,7 +33,7 @@ export class CategoryRepository {
    * @returns {Promise<boolean>} カテゴリーが存在するかどうか
    */
   async isCategoryExists(id: string): Promise<boolean> {
-    const category = await this.getCategoryById(id);
+    const category: Category | null = await this.getCategoryById(id);
     return !!category;
   }
 
@@ -74,10 +74,10 @@ export class CategoryRepository {
   /**
    * カテゴリーを削除する
    * @param categoryId カテゴリーID
-   * @returns {Promise<Category>} 削除したカテゴリーのオブジェクト
+   * @returns {Promise<Category>} 削除したカテゴリー
    */
   async deleteCategory(categoryId: string): Promise<Category> {
-    const [data] = await db.delete(category).where(eq(category.id, categoryId)).returning();
+    const [data]: Category[] = await db.delete(category).where(eq(category.id, categoryId)).returning();
     return data;
   }
 }
