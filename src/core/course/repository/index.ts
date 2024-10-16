@@ -17,6 +17,15 @@ export class CourseRepository {
    * @returns {Promise<AdminCourse[]>} 講座一覧
    */
   async getAllCourses(): Promise<AdminCourse[]> {
+    const purchaseCountSubquery = db
+      .select({
+        courseId: purchase.courseId,
+        count: sql<number>`count(*)`.as("count"),
+      })
+      .from(purchase)
+      .groupBy(purchase.courseId)
+      .as("purchaseCount");
+
     const data = await db
       .select({
         course,
@@ -35,13 +44,15 @@ export class CourseRepository {
           'updateDate', ${chapter.updateDate}
         ) order by ${chapter.position}
       ) filter (where ${chapter.id} is not null), '[]')`.as("chapters"),
-        purchasedNumber: sql<number>`count(${purchase.id})`.as("purchasedNumber"),
+        purchasedNumber: sql<number>`coalesce(${purchaseCountSubquery.count}, 0)`.as(
+          "purchasedNumber",
+        ),
       })
       .from(course)
       .leftJoin(chapter, eq(course.id, chapter.courseId))
       .leftJoin(category, eq(course.categoryId, category.id))
-      .leftJoin(purchase, eq(course.id, purchase.courseId))
-      .groupBy(course.id, category.id, purchase.id)
+      .leftJoin(purchaseCountSubquery, eq(course.id, purchaseCountSubquery.courseId))
+      .groupBy(course.id, category.id, purchaseCountSubquery.count)
       .orderBy(desc(course.createDate));
     return data;
   }
