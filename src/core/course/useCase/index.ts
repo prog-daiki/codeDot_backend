@@ -17,6 +17,7 @@ import { PurchaseRepository } from "../../purchase/repository";
 import type Stripe from "stripe";
 import { StripeCustomerRepository } from "../../stripeCustomer/repository";
 import { stripe } from "../../../lib/stripe";
+import type { PurchaseCourse } from "../types/purchase-course";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -340,5 +341,15 @@ export class CourseUseCase {
       },
     });
     return session.url;
+  }
+
+  /**
+   * 購入済み講座一覧を取得する
+   * @param userId ユーザーID
+   * @returns 購入済み講座一覧
+   */
+  async getPurchaseCourses(userId: string): Promise<PurchaseCourse[]> {
+    const courses: PurchaseCourse[] = await this.courseRepository.getPurchaseCourses(userId);
+    return courses;
   }
 }

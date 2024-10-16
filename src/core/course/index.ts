@@ -16,6 +16,7 @@ import type { Course } from "./types";
 import type { PublishCourse } from "./types/publish-course";
 import type { PublishCourseWithMuxData } from "./types/publish-course-with-muxData";
 import { PurchaseAlreadyExistsError } from "../../error/PurchaseAlreadyExistsError";
+import type { PurchaseCourse } from "./types/purchase-course";
 
 const Course = new Hono<{
   Variables: {
@@ -77,6 +78,24 @@ Course.get(
     }
   },
 );
+
+/**
+ * 購入済み講座一覧取得API
+ * @route GET /api/courses/purchased
+ * @middleware validateAuthMiddleware - ユーザー権限の検証
+ * @returns 購入済み講座一覧
+ * @throws 購入済み講座一覧取得エラー
+ */
+Course.get("/purchased", validateAuthMiddleware, async (c) => {
+  const auth = getAuth(c);
+  const courseUseCase = c.get("courseUseCase");
+  try {
+    const courses: PurchaseCourse[] = await courseUseCase.getPurchaseCourses(auth!.userId!);
+    return c.json(courses);
+  } catch (error) {
+    return HandleError(c, error, "購入済み講座一覧取得エラー");
+  }
+});
 
 /**
  * 講座取得API
