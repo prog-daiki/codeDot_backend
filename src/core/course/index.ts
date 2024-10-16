@@ -15,6 +15,7 @@ import type { AdminCourse } from "./types/admin-course";
 import type { Course } from "./types";
 import type { PublishCourse } from "./types/publish-course";
 import type { PublishCourseWithMuxData } from "./types/publish-course-with-muxData";
+import { PurchaseAlreadyExistsError } from "../../error/PurchaseAlreadyExistsError";
 
 const Course = new Hono<{
   Variables: {
@@ -241,7 +242,10 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course: Course = await courseUseCase.updateCourseThumbnail(courseId, validatedData.imageUrl);
+      const course: Course = await courseUseCase.updateCourseThumbnail(
+        courseId,
+        validatedData.imageUrl,
+      );
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -301,7 +305,10 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course: Course = await courseUseCase.updateCourseCategory(courseId, validatedData.categoryId);
+      const course: Course = await courseUseCase.updateCourseCategory(
+        courseId,
+        validatedData.categoryId,
+      );
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -334,7 +341,10 @@ Course.put(
     const { course_id: courseId } = c.req.valid("param");
     const courseUseCase = c.get("courseUseCase");
     try {
-      const course: Course = await courseUseCase.updateCourseSourceUrl(courseId, validatedData.sourceUrl);
+      const course: Course = await courseUseCase.updateCourseSourceUrl(
+        courseId,
+        validatedData.sourceUrl,
+      );
       return c.json(course);
     } catch (error) {
       if (error instanceof CourseNotFoundError) {
@@ -430,6 +440,39 @@ Course.delete(
         return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
       }
       return HandleError(c, error, "講座公開エラー");
+    }
+  },
+);
+
+/**
+ * 講座購入API
+ * @route POST /api/courses/:course_id/checkout
+ * @middleware validateAuthMiddleware - 認証済みユーザーの検証
+ * @returns 講座購入URL
+ * @throws CourseNotFoundError
+ * @throws PurchaseAlreadyExistsError
+ * @throws 講座購入エラー
+ */
+Course.post(
+  "/:course_id/checkout",
+  validateAuthMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const auth = getAuth(c);
+    const emailAddress = (await c.get("clerk").users.getUser(auth!.userId!)).emailAddresses[0]
+      .emailAddress;
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      const url = await courseUseCase.checkoutCourse(courseId, auth!.userId!, emailAddress);
+      return c.json({ url: url });
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      } else if (error instanceof PurchaseAlreadyExistsError) {
+        return c.json({ error: Messages.MSG_ERR_005 }, 400);
+      }
+      return HandleError(c, error, "講座購入エラー");
     }
   },
 );

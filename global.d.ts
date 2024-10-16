@@ -4,5 +4,6 @@ declare namespace NodeJS {
     DATABASE_URL: string;
     MUX_TOKEN_ID: string;
     MUX_TOKEN_SECRET: string;
+    NEXT_PUBLIC_APP_URL: string;
   }
 }

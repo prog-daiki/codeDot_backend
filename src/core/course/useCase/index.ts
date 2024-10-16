@@ -12,6 +12,11 @@ import { MuxDataRepository } from "../../muxData/repository";
 import type { Chapter } from "../../chapter/types";
 import type { MuxData } from "../../muxData/types";
 import type { PublishCourseWithMuxData } from "../types/publish-course-with-muxData";
+import { PurchaseAlreadyExistsError } from "../../../error/PurchaseAlreadyExistsError";
+import { PurchaseRepository } from "../../purchase/repository";
+import type Stripe from "stripe";
+import { StripeCustomerRepository } from "../../stripeCustomer/repository";
+import { stripe } from "../../../lib/stripe";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -21,12 +26,16 @@ export class CourseUseCase {
   private categoryRepository: CategoryRepository;
   private chapterRepository: ChapterRepository;
   private muxDataRepository: MuxDataRepository;
+  private purchaseRepository: PurchaseRepository;
+  private stripeCustomerRepository: StripeCustomerRepository;
 
   constructor() {
     this.courseRepository = new CourseRepository();
     this.categoryRepository = new CategoryRepository();
     this.chapterRepository = new ChapterRepository();
     this.muxDataRepository = new MuxDataRepository();
+    this.purchaseRepository = new PurchaseRepository();
+    this.stripeCustomerRepository = new StripeCustomerRepository();
   }
 
   /**
@@ -267,5 +276,69 @@ export class CourseUseCase {
     }
 
     return await this.courseRepository.getPublishCourse(courseId, userId);
+  }
+
+  /**
+   * 講座を購入する
+   * @param courseId 講座ID
+   * @param userId ユーザーID
+   * @param emailAddresses ユーザーのメールアドレス
+   * @returns 購入情報
+   */
+  async checkoutCourse(courseId: string, userId: string, emailAddresses: string) {
+    // 講座存在チェック
+    const course = await this.courseRepository.getCourseById(courseId);
+    if (!course) {
+      throw new CourseNotFoundError();
+    }
+
+    // 講座をすでに購入しているかチェック
+    const existsPurchase = await this.purchaseRepository.existsPurchase(courseId, userId);
+    if (existsPurchase) {
+      throw new PurchaseAlreadyExistsError();
+    }
+
+    // 購入情報を作成する
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "JPY",
+          product_data: {
+            name: course.title,
+            description: course.description!,
+          },
+          unit_amount: course.price!,
+        },
+      },
+    ];
+
+    let customer = await this.stripeCustomerRepository.getStripeCustomer(userId);
+
+    const stripeInstance = stripe();
+
+    if (!customer) {
+      const stripeCustomer = await stripeInstance.customers.create({
+        email: emailAddresses,
+      });
+
+      customer = await this.stripeCustomerRepository.registerStripeCustomer(
+        userId,
+        stripeCustomer.id,
+      );
+    }
+
+    const session = await stripeInstance.checkout.sessions.create({
+      customer: customer.stripeCustomerId,
+      line_items,
+      mode: "payment",
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${course.id}?success=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${course.id}?canceled=1`,
+      metadata: {
+        courseId: course.id,
+        userId: userId,
+      },
+    });
+    return session.url;
   }
 }
