@@ -1,12 +1,15 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
+//@ts-ignore
 import Course from "./src/core/course";
-import { clerkMiddleware } from "@hono/clerk-auth";
+//@ts-ignore
 import Category from "./src/core/category";
+//@ts-ignore
+import Chapter from "./src/core/chapter";
+import { clerkMiddleware } from "@hono/clerk-auth";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import Webhook from "./src/core/webhook";
-import Chapter from "./src/core/chapter";
 
 const app = new Hono();
 app.use(
