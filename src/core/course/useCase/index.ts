@@ -18,6 +18,7 @@ import type Stripe from "stripe";
 import { StripeCustomerRepository } from "../../stripeCustomer/repository";
 import { stripe } from "../../../lib/stripe";
 import type { PurchaseCourse } from "../types/purchase-course";
+import { CourseNotFreeError } from "../../../error/CourseNotFreeError";
 
 /**
  * 講座に関するユースケースを管理するクラス
@@ -341,6 +342,32 @@ export class CourseUseCase {
       },
     });
     return session.url;
+  }
+
+  /**
+   * 無料講座を購入する
+   * @param courseId 講座ID
+   * @param userId ユーザーID
+   */
+  async checkoutFreeCourse(courseId: string, userId: string): Promise<void> {
+    // 講座存在チェック
+    const existsCourse = await this.courseRepository.getCourseById(courseId);
+    if (!existsCourse) {
+      throw new CourseNotFoundError();
+    }
+
+    // 講座が無料かチェック
+    if (existsCourse.price !== 0) {
+      throw new CourseNotFreeError();
+    }
+
+    // 講座をすでに購入しているかチェック
+    const existsPurchase = await this.purchaseRepository.existsPurchase(courseId, userId);
+    if (existsPurchase) {
+      throw new PurchaseAlreadyExistsError();
+    }
+
+    await this.purchaseRepository.registerPurchase(courseId, userId);
   }
 
   /**

@@ -17,6 +17,7 @@ import type { PublishCourse } from "./types/publish-course";
 import type { PublishCourseWithMuxData } from "./types/publish-course-with-muxData";
 import { PurchaseAlreadyExistsError } from "../../error/PurchaseAlreadyExistsError";
 import type { PurchaseCourse } from "./types/purchase-course";
+import { CourseNotFreeError } from "../../error/CourseNotFreeError";
 
 const Course = new Hono<{
   Variables: {
@@ -492,6 +493,39 @@ Course.post(
         return c.json({ error: Messages.MSG_ERR_005 }, 400);
       }
       return HandleError(c, error, "講座購入エラー");
+    }
+  },
+);
+
+/**
+ * 講座無料購入API
+ * @route POST /api/courses/:course_id/checkout
+ * @middleware validateAuthMiddleware - 認証済みユーザーの検証
+ * @returns 購入ステータス
+ * @throws CourseNotFoundError
+ * @throws PurchaseAlreadyExistsError
+ * @throws 講座無料購入エラー
+ */
+Course.post(
+  "/:course_id/checkout",
+  validateAuthMiddleware,
+  zValidator("param", z.object({ course_id: z.string() })),
+  async (c) => {
+    const auth = getAuth(c);
+    const { course_id: courseId } = c.req.valid("param");
+    const courseUseCase = c.get("courseUseCase");
+    try {
+      await courseUseCase.checkoutFreeCourse(courseId, auth!.userId!);
+      return c.json({ status: "success" });
+    } catch (error) {
+      if (error instanceof CourseNotFoundError) {
+        return c.json({ error: Messages.MSG_ERR_003(Entity.COURSE) }, 404);
+      } else if (error instanceof CourseNotFreeError) {
+        return c.json({ error: Messages.MSG_ERR_006 }, 400);
+      } else if (error instanceof PurchaseAlreadyExistsError) {
+        return c.json({ error: Messages.MSG_ERR_005 }, 400);
+      }
+      return HandleError(c, error, "講座無料購入エラー");
     }
   },
 );
