@@ -7,6 +7,7 @@ import { getCurrentJstDate } from "../../../common/date";
 import type { PublishCourse } from "../types/publish-course";
 import type { AdminCourse } from "../types/admin-course";
 import type { PublishCourseWithMuxData } from "../types/publish-course-with-muxData";
+import type { PurchaseCourse } from "../types/purchase-course";
 
 /**
  * 講座のリポジトリを管理するクラス
@@ -17,6 +18,15 @@ export class CourseRepository {
    * @returns {Promise<AdminCourse[]>} 講座一覧
    */
   async getAllCourses(): Promise<AdminCourse[]> {
+    const purchaseCountSubquery = db
+      .select({
+        courseId: purchase.courseId,
+        count: sql<number>`count(*)`.as("count"),
+      })
+      .from(purchase)
+      .groupBy(purchase.courseId)
+      .as("purchaseCount");
+
     const data = await db
       .select({
         course,
@@ -35,13 +45,15 @@ export class CourseRepository {
           'updateDate', ${chapter.updateDate}
         ) order by ${chapter.position}
       ) filter (where ${chapter.id} is not null), '[]')`.as("chapters"),
-        purchasedNumber: sql<number>`count(${purchase.id})`.as("purchasedNumber"),
+        purchasedNumber: sql<number>`coalesce(${purchaseCountSubquery.count}, 0)`.as(
+          "purchasedNumber",
+        ),
       })
       .from(course)
       .leftJoin(chapter, eq(course.id, chapter.courseId))
       .leftJoin(category, eq(course.categoryId, category.id))
-      .leftJoin(purchase, eq(course.id, purchase.courseId))
-      .groupBy(course.id, category.id, purchase.id)
+      .leftJoin(purchaseCountSubquery, eq(course.id, purchaseCountSubquery.courseId))
+      .groupBy(course.id, category.id, purchaseCountSubquery.count)
       .orderBy(desc(course.createDate));
     return data;
   }
@@ -221,6 +233,44 @@ export class CourseRepository {
    */
   async deleteCourse(courseId: string): Promise<Course> {
     const [data] = await db.delete(course).where(eq(course.id, courseId)).returning();
+    return data;
+  }
+
+  /**
+   * 購入済み講座一覧を取得する
+   * @param userId ユーザーID
+   * @returns 購入済み講座一覧
+   */
+  async getPurchaseCourses(userId: string): Promise<PurchaseCourse[]> {
+    const data: PurchaseCourse[] = await db
+      .select({
+        course,
+        category,
+        chapters: sql<(typeof chapter.$inferSelect)[]>`
+      coalesce(json_agg(
+        json_build_object(
+          'id', ${chapter.id},
+          'title', ${chapter.title},
+          'description', ${chapter.description},
+          'videoUrl', ${chapter.videoUrl},
+          'position', ${chapter.position},
+          'publishFlag', ${chapter.publishFlag},
+          'courseId', ${chapter.courseId},
+          'createDate', ${chapter.createDate},
+          'updateDate', ${chapter.updateDate}
+        ) order by ${chapter.position}
+      ) filter (where ${chapter.id} is not null), '[]')`.as("chapters"),
+      })
+      .from(course)
+      .leftJoin(chapter, eq(course.id, chapter.courseId))
+      .leftJoin(category, eq(course.categoryId, category.id))
+      .innerJoin(
+        purchase,
+        and(eq(course.id, purchase.courseId), userId ? eq(purchase.userId, userId) : undefined),
+      )
+      .where(and(eq(course.publishFlag, true), eq(chapter.publishFlag, true)))
+      .groupBy(course.id, category.id, purchase.id)
+      .orderBy(desc(course.createDate));
     return data;
   }
 }
