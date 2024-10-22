@@ -499,7 +499,7 @@ Course.post(
 
 /**
  * 講座無料購入API
- * @route POST /api/courses/:course_id/checkout
+ * @route POST /api/courses/:course_id/checkout_free
  * @middleware validateAuthMiddleware - 認証済みユーザーの検証
  * @returns 購入ステータス
  * @throws CourseNotFoundError
@@ -507,7 +507,7 @@ Course.post(
  * @throws 講座無料購入エラー
  */
 Course.post(
-  "/:course_id/checkout",
+  "/:course_id/checkout_free",
   validateAuthMiddleware,
   zValidator("param", z.object({ course_id: z.string() })),
   async (c) => {
